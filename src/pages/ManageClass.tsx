@@ -1,4 +1,3 @@
-// src/pages/ManageClass.tsx
 import React, { useEffect, useState } from 'react'
 import { supabase } from '@/utils/supabase'
 import { Class, ClassImage, ClassProp, PropItem, User } from '@/types'
@@ -10,60 +9,65 @@ type Props = { user: User|null }
 const ManageClass: React.FC<Props> = ({ user }) => {
   const [name, setName] = useState('')
   const [savedClass, setSavedClass] = useState<Class|null>(null)
+
   const [allInstructors, setAllInstructors] = useState<User[]>([])
   const [selectedInstructors, setSelectedInstructors] = useState<Set<string>>(new Set())
   const [openAssign, setOpenAssign] = useState(false)
+
   const [classes, setClasses] = useState<Class[]>([])
 
   const isInstructor = user?.role === 'Instructor'
   const isAdminish = user && (user.role === 'super_admin' || user.role === 'admin')
 
+  // Cargar instructores y clases
   useEffect(()=>{
     (async ()=>{
-      const { data } = await supabase.from('users').select('*').eq('role','Instructor')
-      setAllInstructors(data||[])
+      const { data:users } = await supabase.from('users').select('*').eq('role','Instructor')
+      setAllInstructors(users||[])
       const { data:cls } = await supabase.from('classes').select('*').order('created_at', {ascending:false})
       setClasses(cls||[])
     })()
   }, [])
 
+  // Guardar clase y (si es Instructor) ofrecer auto-asignarse
   const saveClass = async () => {
     if (!name.trim()) { alert('Escribe un nombre'); return }
     if (!(await confirm('¿Seguro que deseas guardar esta clase?'))) return
 
-    // 1) Guardar clase
     const { data, error } = await supabase.from('classes').insert({ name }).select().single()
     if (error) { alert('Error guardando clase: '+error.message); return }
 
     setSavedClass(data)
     setClasses(prev=>[data, ...prev])
 
-    // 2) Si es Instructor, preguntar si quiere asignarse la clase (solo si guardó OK)
     if (isInstructor) {
       const asignarse = await confirm('¿Quieres asignarte esta clase?')
       if (asignarse) {
         const { error: errAssign } = await supabase.from('instructor_classes')
           .insert({ class_id: data.id, instructor_id: user!.id })
-        if (errAssign) { alert('Error asignándote la clase: ' + errAssign.message) }
+        if (errAssign) alert('Error asignándote la clase: ' + errAssign.message)
       }
     }
   }
 
+  // Abrir modal de asignación para la clase actualmente en savedClass
   const openAssignModal = () => {
     if (!savedClass) return
-    // Siempre mostramos TODOS los instructores.
-    // Si es Instructor, solo puede seleccionarse a sí mismo: lo preseleccionamos.
-    if (isInstructor) {
-      setSelectedInstructors(new Set([user!.id]))
-    } else {
-      setSelectedInstructors(new Set())
-    }
+    if (isInstructor) setSelectedInstructors(new Set([user!.id]))
+    else setSelectedInstructors(new Set())
+    setOpenAssign(true)
+  }
+
+  // Abrir modal de asignación desde una fila específica
+  const openAssignFor = (cls: Class) => {
+    setSavedClass(cls)
+    if (isInstructor) setSelectedInstructors(new Set([user!.id]))
+    else setSelectedInstructors(new Set())
     setOpenAssign(true)
   }
 
   const toggleInstructor = (id: string) => {
-    // Si es Instructor, solo puede togglearse a sí mismo
-    if (isInstructor && id !== user!.id) return
+    if (isInstructor && id !== user!.id) return // bloquea seleccionar a otros
     setSelectedInstructors(prev=>{
       const n = new Set(prev)
       if (n.has(id)) n.delete(id); else n.add(id)
@@ -78,7 +82,7 @@ const ManageClass: React.FC<Props> = ({ user }) => {
       instructor_id, class_id: savedClass.id
     }))
     if (!payload.length) { alert('Selecciona al menos un instructor.'); return }
-    const { error } = await supabase.from('instructor_classes').insert(payload, { upsert: true })
+    const { error } = await supabase.from('instructor_classes').insert(payload)
     if (error) { alert('Error asignando: '+error.message); return }
     setOpenAssign(false)
     alert('Asignaciones guardadas.')
@@ -91,6 +95,7 @@ const ManageClass: React.FC<Props> = ({ user }) => {
     setClasses(prev=>prev.filter(x=>x.id!==c.id))
   }
 
+  // Modal "Asignado a:" (solo lectura)
   const [showAssigned, setShowAssigned] = useState<Class|null>(null)
   const [assigned, setAssigned] = useState<User[]>([])
   React.useEffect(()=>{
@@ -105,6 +110,7 @@ const ManageClass: React.FC<Props> = ({ user }) => {
 
   return (
     <div>
+      {/* Panel superior: crear clase + asignar la recién creada */}
       <div className="panel" style={{display:'grid', gridTemplateColumns:'2fr auto', gap:12}}>
         <div>
           <label>Nombre de la clase</label>
@@ -112,16 +118,16 @@ const ManageClass: React.FC<Props> = ({ user }) => {
         </div>
         <div style={{display:'flex', alignItems:'end', gap:8}}>
           <button className="btn primary" onClick={saveClass}>Save</button>
-          {/* Botón visible para todos, solo si hay clase guardada */}
           {savedClass && <button className="btn accent" onClick={openAssignModal}>Asign instructor</button>}
         </div>
       </div>
 
+      {/* Tabla de clases */}
       <div className="panel">
         <h3 style={{marginTop:0}}>Clases</h3>
         <table className="table">
           <thead>
-            <tr><th>Nombre</th><th style={{width:340}}>Acciones</th></tr>
+            <tr><th>Nombre</th><th style={{width:420}}>Acciones</th></tr>
           </thead>
           <tbody>
             {classes.map(c=>{
@@ -133,6 +139,7 @@ const ManageClass: React.FC<Props> = ({ user }) => {
                   <td>
                     <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
                       <button className="btn" onClick={()=>setShowAssigned(c)}>Asignado a:</button>
+                      <button className="btn accent" onClick={()=>openAssignFor(c)}>Asign instructor</button>
                       {canDelete && <button className="btn danger" onClick={()=>deleteClass(c)}>Eliminar</button>}
                       {showEdit && <EditInstructorClass classId={c.id} user={user!} />}
                     </div>
@@ -144,12 +151,11 @@ const ManageClass: React.FC<Props> = ({ user }) => {
         </table>
       </div>
 
-      {/* Modal: siempre lista todos los instructores.
-          Si el usuario es Instructor, los check ajenos salen deshabilitados */}
+      {/* Modal de ASIGNACIÓN (con checkboxes SIEMPRE mostrando TODOS los instructores) */}
       <Modal
         open={openAssign}
         onClose={()=>setOpenAssign(false)}
-        title={`Asignar instructores - ${savedClass?.name}`}
+        title={`Asignar instructores - ${savedClass?.name ?? ''}`}
         footer={
           <>
             <button className="btn" onClick={()=>setOpenAssign(false)}>Cancelar</button>
@@ -169,9 +175,11 @@ const ManageClass: React.FC<Props> = ({ user }) => {
               {i.display_name}
             </label>
           ))}
+          {!allInstructors.length && <div className="small">No hay instructores creados.</div>}
         </div>
       </Modal>
 
+      {/* Modal "Asignado a:" (solo lectura) */}
       <Modal open={!!showAssigned} onClose={()=>setShowAssigned(null)} title={`Asignado a - ${showAssigned?.name}`}>
         {assigned.length ? <ul>{assigned.map(a=><li key={a.id}>{a.display_name}</li>)}</ul>
         : <div className="small">La clase no ha sido asignada aún.</div>}
@@ -180,7 +188,7 @@ const ManageClass: React.FC<Props> = ({ user }) => {
   )
 }
 
-/* ==== Editor del Instructor (sin cambios en la lógica solicitada) ==== */
+/* ==== Editor del Instructor ==== */
 const EditInstructorClass: React.FC<{ classId: number, user: User }> = ({ classId, user }) => {
   const [open, setOpen] = useState(false)
   const [allProps, setAllProps] = useState<PropItem[]>([])
