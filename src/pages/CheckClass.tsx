@@ -91,16 +91,16 @@ const CheckClass: React.FC<{ user: User|null }> = () => {
         <div>
           <label>Instructor</label>
           <select value={filterInstructor} onChange={e=>setFilterInstructor(e.target.value)}>
-            <option value="">- Selecciona -</option>
+            <option value="">- Select -</option>
             {filteredInstructors.map(i=>(
               <option key={i.id} value={i.id}>{i.display_name}</option>
             ))}
           </select>
         </div>
         <div>
-          <label>Clase</label>
+          <label>Class</label>
           <select value={filterClass} onChange={e=>setFilterClass(e.target.value?Number(e.target.value):'')}>
-            <option value="">- Selecciona -</option>
+            <option value="">- Select -</option>
             {filteredClasses.map(c=>(
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
@@ -110,35 +110,35 @@ const CheckClass: React.FC<{ user: User|null }> = () => {
 
       {/* Props y Nota lado a lado */}
       <div className="panel">
-        <h3 style={{marginTop:0}}>Detalles</h3>
+        <h3 style={{marginTop:0}}>Details</h3>
         {filterInstructor && filterClass ? (
           <div className="grid grid-2">
             <div>
-              <h4 style={{marginTop:0}}>Props necesarios</h4>
+              <h4 style={{marginTop:0}}>Props needed</h4>
               {props_.length ? (
                 <ul>
                   {props_.map(p=>(<li key={p.id}>{p.prop.name}</li>))}
                 </ul>
               ) : (
-                <div className="small">No hay props registrados para esta combinación.</div>
+                <div className="small">No registered props for this combination.</div>
               )}
             </div>
             <div>
-              <h4 style={{marginTop:0}}>Nota</h4>
+              <h4 style={{marginTop:0}}>Notes</h4>
               {note ? (
                 <div className="panel" style={{padding:'12px', whiteSpace:'pre-wrap'}}>{note}</div>
               ) : (
-                <div className="small">Sin nota para esta combinación.</div>
+                <div className="small">No notes for this combination.</div>
               )}
             </div>
           </div>
         ) : (
-          <div className="small">Selecciona instructor y clase para ver Props y Nota.</div>
+          <div className="small">Select instructor and class to see Props and Note.</div>
         )}
       </div>
 
       <div className="panel">
-        <h3 style={{marginTop:0}}>Imágenes de referencia</h3>
+        <h3 style={{marginTop:0}}>Reference Images</h3>
         <ImageCarousel urls={images.map(i=>i.url)} />
       </div>
     </div>
