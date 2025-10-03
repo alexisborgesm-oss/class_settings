@@ -1,4 +1,4 @@
-
+// src/App.tsx
 import React, { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Navbar from '@/components/Navbar'
@@ -17,7 +17,7 @@ export default function App() {
 
   const app = (
     <BrowserRouter>
-      <Navbar user={user} />
+      <Navbar user={user} onLogout={logout} />
       <div className="container">
         <Routes>
           <Route path="/" element={<CheckClass user={user} />} />
@@ -25,9 +25,6 @@ export default function App() {
           <Route path="/modify" element={<ModifyClass user={user} />} />
           <Route path="/users" element={<ManageUsers user={user} />} />
         </Routes>
-        <div style={{marginTop:16, display:'flex', justifyContent:'flex-end'}}>
-          {user && <button className="btn" onClick={logout}>Salir</button>}
-        </div>
       </div>
     </BrowserRouter>
   )
