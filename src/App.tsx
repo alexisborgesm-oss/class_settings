@@ -14,7 +14,7 @@ export default function App() {
   const logout = () => { localStorage.removeItem('user'); setUser(null) }
 
   const app = (
-    <BrowserRouter>
+    <HashRouter>
       <Navbar user={user} onLogout={logout} />
       <div className="container">
         <Routes>
@@ -24,7 +24,7 @@ export default function App() {
           <Route path="/users" element={<ManageUsers user={user} />} />
         </Routes>
       </div>
-    </BrowserRouter>
+    </HashRouter>
   )
 
   return user ? app : <AuthGate onUser={setUser} />
