@@ -3,12 +3,11 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { User } from '@/types'
 
-const Navbar: React.FC<{ user: User | null }> = ({ user }) => {
+const Navbar: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, onLogout }) => {
   const [open, setOpen] = useState(false)
   const canManageUsers = user && (user.role === 'super_admin' || user.role === 'admin')
   const canModifyClass = canManageUsers
 
-  // Cerrar al hacer click fuera del dropdown
   const ddRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -33,8 +32,7 @@ const Navbar: React.FC<{ user: User | null }> = ({ user }) => {
       <div style={{display:'flex', alignItems:'center', gap:12}}>
         <span className="user-pill">{user ? `${user.display_name} · ${user.role}` : 'No conectado'}</span>
 
-        {/* Dropdown sin onMouseLeave; se cierra por click fuera o al elegir opción */}
-        <div ref={ddRef} className={`dropdown ${open ? 'open' : ''}`}>
+        <div ref={ddRef} className={`dropdown ${open?'open':''}`}>
           <button className="btn" onClick={()=>setOpen(o=>!o)}>More ▾</button>
           <div className="dropdown-menu">
             {canManageUsers && (
@@ -46,6 +44,11 @@ const Navbar: React.FC<{ user: User | null }> = ({ user }) => {
               <Link to="/modify" className="dropdown-item" onClick={()=>setOpen(false)}>
                 Modify Class
               </Link>
+            )}
+            {user && (
+              <button className="dropdown-item" onClick={()=>{ setOpen(false); onLogout(); }}>
+                Salir
+              </button>
             )}
           </div>
         </div>
