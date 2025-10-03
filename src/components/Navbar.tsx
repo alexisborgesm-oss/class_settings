@@ -1,13 +1,13 @@
-// src/components/Navbar.tsx
 import React, { useEffect, useRef, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { User } from '@/types'
 
 const Navbar: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, onLogout }) => {
   const [open, setOpen] = useState(false)
-  const canManageUsers = user && (user.role === 'super_admin' || user.role === 'admin')
+  const canManageUsers = !!user && (user.role === 'super_admin' || user.role === 'admin')
   const canModifyClass = canManageUsers
 
+  // Cierra por click fuera
   const ddRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -46,9 +46,14 @@ const Navbar: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, o
               </Link>
             )}
             {user && (
-              <button className="dropdown-item" onClick={()=>{ setOpen(false); onLogout(); }}>
+              // Usamos <a> para que se vea EXACTAMENTE igual que las otras entradas
+              <a
+                href="#"
+                className="dropdown-item"
+                onClick={(e)=>{ e.preventDefault(); setOpen(false); onLogout(); }}
+              >
                 Salir
-              </button>
+              </a>
             )}
           </div>
         </div>
