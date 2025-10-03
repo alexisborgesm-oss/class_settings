@@ -22,7 +22,7 @@ const AuthGate: React.FC<{ onUser: (u: User|null)=>void }> = ({ onUser }) => {
       .eq('password', password)
       .limit(1)
     if (error) { alert('Error consultando usuarios: '+error.message); return }
-    if (!data || !data.length) { alert('Credenciales invalidas'); return }
+    if (!data || !data.length) { alert('Invalid username/passwd'); return }
     const user = data[0] as User
     localStorage.setItem('user', JSON.stringify(user))
     onUser(user)
@@ -31,13 +31,12 @@ const AuthGate: React.FC<{ onUser: (u: User|null)=>void }> = ({ onUser }) => {
   return (
     <div className="container">
       <div className="panel" style={{maxWidth:480, margin:'10vh auto'}}>
-        <h2>Entrar</h2>
+        <h2>Enter</h2>
         <form onSubmit={login} className="grid" style={{gap:12}}>
-          <input className="input" value={username} onChange={e=>setUsername(e.target.value)} placeholder="Usuario" />
-          <input className="input" type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Contrasena" />
-          <button className="btn primary" type="submit">Entrar</button>
+          <input className="input" value={username} onChange={e=>setUsername(e.target.value)} placeholder="User" />
+          <input className="input" type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Passwd" />
+          <button className="btn primary" type="submit">Enter</button>
         </form>
-        <p className="small" style={{marginTop:12}}>Usuario super_admin por defecto: <b>superadmin</b> / <b>Qaz123*</b></p>
       </div>
     </div>
   )
