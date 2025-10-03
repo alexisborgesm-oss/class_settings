@@ -23,7 +23,9 @@ const Navbar: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, o
     <nav className="navbar">
       <div style={{display:'flex', gap:16, alignItems:'center'}}>
         <span className="brand">Class Settings</span>
-        <div className="nav-links">
+
+        {/* Links visibles SOLO en escritorio */}
+        <div className="nav-links only-desktop">
           <NavLink to="/" className={({isActive})=>`nav-link ${isActive?'active':''}`}>Check Class Setting</NavLink>
           <NavLink to="/manage" className={({isActive})=>`nav-link ${isActive?'active':''}`}>Manage Class</NavLink>
         </div>
@@ -35,6 +37,14 @@ const Navbar: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, o
         <div ref={ddRef} className={`dropdown ${open?'open':''}`}>
           <button className="btn" onClick={()=>setOpen(o=>!o)}>More ▾</button>
           <div className="dropdown-menu">
+            {/* En móvil, mostramos también las rutas principales dentro del menú */}
+            <Link to="/" className="dropdown-item only-mobile" onClick={()=>setOpen(false)}>
+              Check Class Setting
+            </Link>
+            <Link to="/manage" className="dropdown-item only-mobile" onClick={()=>setOpen(false)}>
+              Manage Class
+            </Link>
+
             {canManageUsers && (
               <Link to="/users" className="dropdown-item" onClick={()=>setOpen(false)}>
                 Manage users
@@ -46,7 +56,6 @@ const Navbar: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, o
               </Link>
             )}
             {user && (
-              // Usamos <a> para que se vea EXACTAMENTE igual que las otras entradas
               <a
                 href="#"
                 className="dropdown-item"
