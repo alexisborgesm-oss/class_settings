@@ -32,7 +32,7 @@ const ManageClass: React.FC<Props> = ({ user }) => {
 
   // Guardar clase y (si es Instructor) ofrecer auto-asignarse
   const saveClass = async () => {
-    if (!name.trim()) { alert('Escribe un nombre'); return }
+    if (!name.trim()) { alert('Write a name'); return }
     if (!(await confirm('¿Seguro que deseas guardar esta clase?'))) return
 
     const { data, error } = await supabase.from('classes').insert({ name }).select().single()
@@ -42,7 +42,7 @@ const ManageClass: React.FC<Props> = ({ user }) => {
     setClasses(prev=>[data, ...prev])
 
     if (isInstructor) {
-      const asignarse = await confirm('¿Quieres asignarte esta clase?')
+      const asignarse = await confirm('Do you want to assign this class to yourself?')
       if (asignarse) {
         const { error: errAssign } = await supabase.from('instructor_classes')
           .insert({ class_id: data.id, instructor_id: user!.id })
@@ -78,11 +78,11 @@ const ManageClass: React.FC<Props> = ({ user }) => {
 
   const assignInstructors = async () => {
     if (!savedClass) return
-    if (!(await confirm('¿Confirmas asignar la clase a los instructores seleccionados?'))) return
+    if (!(await confirm('¿Do you confirm assigning the class to the selected instructors?'))) return
     const payload = Array.from(selectedInstructors).map(instructor_id=>({
       instructor_id, class_id: savedClass.id
     }))
-    if (!payload.length) { alert('Selecciona al menos un instructor.'); return }
+    if (!payload.length) { alert('Select at least one instructor'); return }
     const { error } = await supabase.from('instructor_classes').insert(payload)
     if (error) { alert('Error asignando: '+error.message); return }
     setOpenAssign(false)
@@ -90,9 +90,9 @@ const ManageClass: React.FC<Props> = ({ user }) => {
   }
 
   const deleteClass = async (c: Class) => {
-    if (!(await confirm('Eliminar la clase también borrará props, imágenes y nota asociadas. ¿Seguro?'))) return
+    if (!(await confirm('Deleting the class will also remove props, images, and the associated note. Are you sure?'))) return
     const { error } = await supabase.rpc('delete_class_cascade', { p_class_id: c.id })
-    if (error) { alert('Error eliminando: '+error.message); return }
+    if (error) { alert('Error deleting: '+error.message); return }
     setClasses(prev=>prev.filter(x=>x.id!==c.id))
   }
 
@@ -114,7 +114,7 @@ const ManageClass: React.FC<Props> = ({ user }) => {
       {/* Panel superior: crear clase + asignar la recién creada */}
       <div className="panel" style={{display:'grid', gridTemplateColumns:'2fr auto', gap:12}}>
         <div>
-          <label>Nombre de la clase</label>
+          <label>Name of the class</label>
           <input className="input" value={name} onChange={e=>setName(e.target.value)} placeholder="Ej. Wall Yoga" />
         </div>
         <div style={{display:'flex', alignItems:'end', gap:8}}>
@@ -125,10 +125,10 @@ const ManageClass: React.FC<Props> = ({ user }) => {
 
       {/* Tabla de clases */}
       <div className="panel">
-        <h3 style={{marginTop:0}}>Clases</h3>
+        <h3 style={{marginTop:0}}>Classes</h3>
         <table className="table">
           <thead>
-            <tr><th>Nombre</th><th style={{width:420}}>Acciones</th></tr>
+            <tr><th>Class name</th><th style={{width:420}}>Settings</th></tr>
           </thead>
           <tbody>
             {classes.map(c=>{
@@ -139,9 +139,9 @@ const ManageClass: React.FC<Props> = ({ user }) => {
                   <td>{c.name}</td>
                   <td>
                     <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
-                      <button className="btn" onClick={()=>setShowAssigned(c)}>Asignado a:</button>
-                      <button className="btn accent" onClick={()=>openAssignFor(c)}>Asign instructor</button>
-                      {canDelete && <button className="btn danger" onClick={()=>deleteClass(c)}>Eliminar</button>}
+                      <button className="btn" onClick={()=>setShowAssigned(c)}>Assigned to:</button>
+                      <button className="btn accent" onClick={()=>openAssignFor(c)}>Assign instructor</button>
+                      {canDelete && <button className="btn danger" onClick={()=>deleteClass(c)}>Delete</button>}
                       {showEdit && <EditInstructorClass classId={c.id} user={user!} />}
                     </div>
                   </td>
@@ -156,10 +156,10 @@ const ManageClass: React.FC<Props> = ({ user }) => {
       <Modal
         open={openAssign}
         onClose={()=>setOpenAssign(false)}
-        title={`Asignar instructores - ${savedClass?.name ?? ''}`}
+        title={`Assign instructors - ${savedClass?.name ?? ''}`}
         footer={
           <>
-            <button className="btn" onClick={()=>setOpenAssign(false)}>Cancelar</button>
+            <button className="btn" onClick={()=>setOpenAssign(false)}>Cancel</button>
             <button className="btn primary" onClick={assignInstructors}>Save</button>
           </>
         }
@@ -176,14 +176,14 @@ const ManageClass: React.FC<Props> = ({ user }) => {
               {i.display_name}
             </label>
           ))}
-          {!allInstructors.length && <div className="small">No hay instructores creados.</div>}
+          {!allInstructors.length && <div className="small">No instructors created yet.</div>}
         </div>
       </Modal>
 
       {/* Modal "Asignado a:" (solo lectura) */}
-      <Modal open={!!showAssigned} onClose={()=>setShowAssigned(null)} title={`Asignado a - ${showAssigned?.name}`}>
+      <Modal open={!!showAssigned} onClose={()=>setShowAssigned(null)} title={`Assign to - ${showAssigned?.name}`}>
         {assigned.length ? <ul>{assigned.map(a=><li key={a.id}>{a.display_name}</li>)}</ul>
-        : <div className="small">La clase no ha sido asignada aún.</div>}
+        : <div className="small">Class not assigned yet.</div>}
       </Modal>
     </div>
   )
@@ -281,15 +281,15 @@ const EditInstructorClass: React.FC<{ classId: number, user: User }> = ({ classI
         if (error) throw new Error(error.message)
       }
 
-      alert('Todo guardado correctamente.')
+      alert('Everything saved successfully')
     } catch (e:any) {
-      alert('Error guardando: ' + (e?.message || e))
+      alert('Error saving: ' + (e?.message || e))
     }
   }
 
   return (
     <>
-      <button className="btn" onClick={()=>setOpen(true)}>Editar</button>
+      <button className="btn" onClick={()=>setOpen(true)}>Edit</button>
       <Modal open={open} onClose={()=>setOpen(false)} title="Editar clase (tú)">
         <div className="grid grid-2">
           {/* ---- PROPS ---- */}
@@ -300,13 +300,13 @@ const EditInstructorClass: React.FC<{ classId: number, user: User }> = ({ classI
                 <option value="">- Prop -</option>
                 {allProps.map(p=>(<option key={p.id} value={p.id}>{p.name}</option>))}
               </select>
-              <button className="btn" onClick={addProp}>Añadir</button>
+              <button className="btn" onClick={addProp}>Create</button>
             </div>
             <ul style={{marginTop:12}}>
               {myProps.map(p=>(
                 <li key={p.id} style={{display:'flex', justifyContent:'space-between', alignItems:'center', gap:8}}>
                   <span>{p.prop.name}</span>
-                  <button className="btn danger" onClick={()=>removeProp(p.id)}>Quitar</button>
+                  <button className="btn danger" onClick={()=>removeProp(p.id)}>Remove</button>
                 </li>
               ))}
             </ul>
@@ -314,7 +314,7 @@ const EditInstructorClass: React.FC<{ classId: number, user: User }> = ({ classI
 
           {/* ---- IMÁGENES ---- */}
           <div>
-            <h4>Imágenes</h4>
+            <h4>Images</h4>
             <input
               type="file"
               accept="image/*"
@@ -323,12 +323,12 @@ const EditInstructorClass: React.FC<{ classId: number, user: User }> = ({ classI
             {/* Pendientes de subir */}
             {pendingImages.length > 0 && (
               <div style={{marginTop:8}}>
-                <div className="small">Pendientes de subir:</div>
+                <div className="small">Pending upload:</div>
                 <ul>
                   {pendingImages.map((f,idx)=>(
                     <li key={idx} style={{display:'flex', gap:8, alignItems:'center', justifyContent:'space-between'}}>
                       <span style={{overflow:'hidden', textOverflow:'ellipsis'}}>{f.name}</span>
-                      <button className="btn" onClick={()=>removePendingAt(idx)}>Quitar</button>
+                      <button className="btn" onClick={()=>removePendingAt(idx)}>Remove</button>
                     </li>
                   ))}
                 </ul>
@@ -336,15 +336,15 @@ const EditInstructorClass: React.FC<{ classId: number, user: User }> = ({ classI
             )}
             {/* Ya guardadas */}
             <div style={{marginTop:12}}>
-              <div className="small">Guardadas:</div>
+              <div className="small">Saved:</div>
               <ul>
                 {images.map(img=>(
                   <li key={img.id} style={{display:'flex', alignItems:'center', justifyContent:'space-between', gap:8}}>
-                    <a className="nav-link" href={img.url} target="_blank">Ver</a>
-                    <button className="btn danger" onClick={()=>deleteImage(img.id)}>Eliminar</button>
+                    <a className="nav-link" href={img.url} target="_blank">Showed</a>
+                    <button className="btn danger" onClick={()=>deleteImage(img.id)}>Delete</button>
                   </li>
                 ))}
-                {images.length===0 && <li className="small">No hay imágenes guardadas.</li>}
+                {images.length===0 && <li className="small">No saved images.</li>}
               </ul>
             </div>
           </div>
@@ -355,7 +355,7 @@ const EditInstructorClass: React.FC<{ classId: number, user: User }> = ({ classI
           <h4>Nota (una sola)</h4>
           <textarea className="input" rows={4} value={note} onChange={e=>setNote(e.target.value)} />
           <div style={{marginTop:8, display:'flex', justifyContent:'flex-end', gap:8}}>
-            <button className="btn primary" onClick={saveAll}>Guardar todo</button>
+            <button className="btn primary" onClick={saveAll}>Save everything</button>
           </div>
         </div>
       </Modal>
