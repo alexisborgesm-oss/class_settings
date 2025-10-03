@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react'
+// src/components/Navbar.tsx
+import React, { useEffect, useRef, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { User } from '@/types'
 
@@ -7,6 +7,18 @@ const Navbar: React.FC<{ user: User | null }> = ({ user }) => {
   const [open, setOpen] = useState(false)
   const canManageUsers = user && (user.role === 'super_admin' || user.role === 'admin')
   const canModifyClass = canManageUsers
+
+  // Cerrar al hacer click fuera del dropdown
+  const ddRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (open && ddRef.current && !ddRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [open])
 
   return (
     <nav className="navbar">
@@ -21,11 +33,20 @@ const Navbar: React.FC<{ user: User | null }> = ({ user }) => {
       <div style={{display:'flex', alignItems:'center', gap:12}}>
         <span className="user-pill">{user ? `${user.display_name} · ${user.role}` : 'No conectado'}</span>
 
-        <div className={`dropdown ${open?'open':''}`} onMouseLeave={()=>setOpen(false)}>
+        {/* Dropdown sin onMouseLeave; se cierra por click fuera o al elegir opción */}
+        <div ref={ddRef} className={`dropdown ${open ? 'open' : ''}`}>
           <button className="btn" onClick={()=>setOpen(o=>!o)}>More ▾</button>
           <div className="dropdown-menu">
-            {canManageUsers && <Link to="/users" className="dropdown-item" onClick={()=>setOpen(false)}>Manage users</Link>}
-            {canModifyClass && <Link to="/modify" className="dropdown-item" onClick={()=>setOpen(false)}>Modify Class</Link>}
+            {canManageUsers && (
+              <Link to="/users" className="dropdown-item" onClick={()=>setOpen(false)}>
+                Manage users
+              </Link>
+            )}
+            {canModifyClass && (
+              <Link to="/modify" className="dropdown-item" onClick={()=>setOpen(false)}>
+                Modify Class
+              </Link>
+            )}
           </div>
         </div>
       </div>
