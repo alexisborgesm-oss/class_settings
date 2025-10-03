@@ -1,3 +1,4 @@
+// src/pages/ManageClass.tsx
 import React, { useEffect, useState } from 'react'
 import { supabase } from '@/utils/supabase'
 import { Class, ClassImage, ClassProp, PropItem, User } from '@/types'
@@ -188,13 +189,20 @@ const ManageClass: React.FC<Props> = ({ user }) => {
   )
 }
 
-/* ==== Editor del Instructor ==== */
+/* ==== Editor del Instructor (actualizado con "Guardar todo") ==== */
 const EditInstructorClass: React.FC<{ classId: number, user: User }> = ({ classId, user }) => {
   const [open, setOpen] = useState(false)
+
+  // Props (CRUD inmediato)
   const [allProps, setAllProps] = useState<PropItem[]>([])
   const [selectedPropId, setSelectedPropId] = useState<number|''>('')
   const [myProps, setMyProps] = useState<(ClassProp & {prop:PropItem})[]>([])
+
+  // Imágenes (guardadas) + imágenes pendientes de subir
   const [images, setImages] = useState<ClassImage[]>([])
+  const [pendingImages, setPendingImages] = useState<File[]>([])
+
+  // Nota
   const [note, setNote] = useState('')
 
   React.useEffect(()=>{
@@ -210,9 +218,11 @@ const EditInstructorClass: React.FC<{ classId: number, user: User }> = ({ classI
       const { data:notes } = await supabase.from('class_notes').select('*')
         .eq('class_id', classId).eq('instructor_id', user.id).limit(1)
       setNote(notes && (notes[0]?.note || '') || '')
+      setPendingImages([]) // limpiar cola al abrir
     })()
   }, [classId, user.id, open])
 
+  // ---- Props (inmediato) ----
   const addProp = async () => {
     if (!selectedPropId) return
     const { data, error } = await supabase.from('class_props')
@@ -228,36 +238,53 @@ const EditInstructorClass: React.FC<{ classId: number, user: User }> = ({ classI
     setMyProps(prev=>prev.filter(p=>p.id!==id))
   }
 
-  const uploadImage = async (file: File) => {
-    const ext = file.name.split('.').pop()
-    const path = `class_${classId}/instr_${user.id}/${Date.now()}.${ext}`
-    const { error } = await supabase.storage.from('class-images').upload(path, file, { upsert: true })
-    if (error) { alert('Storage error: '+error.message); return }
-    const { data:pub } = await supabase.storage.from('class-images').getPublicUrl(path)
-    const { data, error:err2 } = await supabase.from('class_images')
-      .insert({ class_id: classId, instructor_id: user.id, url: pub.publicUrl })
-      .select().single()
-    if (err2) { alert(err2.message); return }
-    setImages(prev=>[...prev, data!])
+  // ---- Imágenes (pendientes + guardadas) ----
+  const stageImage = (file: File) => {
+    setPendingImages(prev=>[...prev, file])
   }
-
+  const removePendingAt = (idx: number) => {
+    setPendingImages(prev=>prev.filter((_,i)=>i!==idx))
+  }
   const deleteImage = async (id:number) => {
     const { error } = await supabase.from('class_images').delete().eq('id', id)
     if (error) { alert(error.message); return }
     setImages(prev=>prev.filter(p=>p.id!==id))
   }
 
-  const saveNote = async () => {
-    const { data:existing } = await supabase.from('class_notes').select('*')
-      .eq('class_id', classId).eq('instructor_id', user.id).limit(1)
-    if (existing && existing.length) {
-      const { error } = await supabase.from('class_notes').update({ note }).eq('id', existing[0].id)
-      if (error) { alert(error.message); return }
-    } else {
-      const { error } = await supabase.from('class_notes').insert({ class_id: classId, instructor_id: user.id, note })
-      if (error) { alert(error.message); return }
+  // ---- Guardar TODO (imagenes pendientes + nota) ----
+  const saveAll = async () => {
+    try {
+      // 1) Subir todas las pendientes
+      for (const file of pendingImages) {
+        const ext = file.name.split('.').pop()
+        const path = `class_${classId}/instr_${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+        const { error: upErr } = await supabase.storage.from('class-images').upload(path, file, { upsert: true })
+        if (upErr) throw new Error('Storage error: '+upErr.message)
+        const { data:pub } = await supabase.storage.from('class-images').getPublicUrl(path)
+        const { data, error:insErr } = await supabase.from('class_images')
+          .insert({ class_id: classId, instructor_id: user.id, url: pub.publicUrl })
+          .select().single()
+        if (insErr) throw new Error(insErr.message)
+        setImages(prev=>[...prev, data!])
+      }
+      setPendingImages([])
+
+      // 2) Guardar / actualizar nota
+      const { data:existing } = await supabase.from('class_notes').select('*')
+        .eq('class_id', classId).eq('instructor_id', user.id).limit(1)
+
+      if (existing && existing.length) {
+        const { error } = await supabase.from('class_notes').update({ note }).eq('id', existing[0].id)
+        if (error) throw new Error(error.message)
+      } else {
+        const { error } = await supabase.from('class_notes').insert({ class_id: classId, instructor_id: user.id, note })
+        if (error) throw new Error(error.message)
+      }
+
+      alert('Todo guardado correctamente.')
+    } catch (e:any) {
+      alert('Error guardando: ' + (e?.message || e))
     }
-    alert('Nota guardada.')
   }
 
   return (
@@ -265,6 +292,7 @@ const EditInstructorClass: React.FC<{ classId: number, user: User }> = ({ classI
       <button className="btn" onClick={()=>setOpen(true)}>Editar</button>
       <Modal open={open} onClose={()=>setOpen(false)} title="Editar clase (tú)">
         <div className="grid grid-2">
+          {/* ---- PROPS ---- */}
           <div>
             <h4>Props</h4>
             <div style={{display:'flex', gap:8}}>
@@ -283,24 +311,51 @@ const EditInstructorClass: React.FC<{ classId: number, user: User }> = ({ classI
               ))}
             </ul>
           </div>
+
+          {/* ---- IMÁGENES ---- */}
           <div>
             <h4>Imágenes</h4>
-            <input type="file" accept="image/*" onChange={e=>e.target.files && uploadImage(e.target.files[0])} />
-            <ul style={{marginTop:12}}>
-              {images.map(img=>(
-                <li key={img.id} style={{display:'flex', alignItems:'center', justifyContent:'space-between', gap:8}}>
-                  <a className="nav-link" href={img.url} target="_blank">Ver</a>
-                  <button className="btn danger" onClick={()=>deleteImage(img.id)}>Eliminar</button>
-                </li>
-              ))}
-            </ul>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={e=>e.target.files && stageImage(e.target.files[0])}
+            />
+            {/* Pendientes de subir */}
+            {pendingImages.length > 0 && (
+              <div style={{marginTop:8}}>
+                <div className="small">Pendientes de subir:</div>
+                <ul>
+                  {pendingImages.map((f,idx)=>(
+                    <li key={idx} style={{display:'flex', gap:8, alignItems:'center', justifyContent:'space-between'}}>
+                      <span style={{overflow:'hidden', textOverflow:'ellipsis'}}>{f.name}</span>
+                      <button className="btn" onClick={()=>removePendingAt(idx)}>Quitar</button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {/* Ya guardadas */}
+            <div style={{marginTop:12}}>
+              <div className="small">Guardadas:</div>
+              <ul>
+                {images.map(img=>(
+                  <li key={img.id} style={{display:'flex', alignItems:'center', justifyContent:'space-between', gap:8}}>
+                    <a className="nav-link" href={img.url} target="_blank">Ver</a>
+                    <button className="btn danger" onClick={()=>deleteImage(img.id)}>Eliminar</button>
+                  </li>
+                ))}
+                {images.length===0 && <li className="small">No hay imágenes guardadas.</li>}
+              </ul>
+            </div>
           </div>
         </div>
-        <div className="panel">
+
+        {/* ---- NOTA + GUARDAR TODO ---- */}
+        <div className="panel" style={{marginTop:12}}>
           <h4>Nota (una sola)</h4>
           <textarea className="input" rows={4} value={note} onChange={e=>setNote(e.target.value)} />
-          <div style={{marginTop:8, display:'flex', justifyContent:'flex-end'}}>
-            <button className="btn primary" onClick={saveNote}>Guardar nota</button>
+          <div style={{marginTop:8, display:'flex', justifyContent:'flex-end', gap:8}}>
+            <button className="btn primary" onClick={saveAll}>Guardar todo</button>
           </div>
         </div>
       </Modal>
