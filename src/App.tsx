@@ -1,4 +1,3 @@
-// src/App.tsx
 import React, { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Navbar from '@/components/Navbar'
@@ -12,7 +11,6 @@ import './styles.css'
 
 export default function App() {
   const [user, setUser] = useState<User|null>(null)
-
   const logout = () => { localStorage.removeItem('user'); setUser(null) }
 
   const app = (
