@@ -73,22 +73,22 @@ const ModifyClass: React.FC<{ user: User|null }> = ({ user }) => {
     })()
   }, [filterClass, filterInstructor])
 
-  if (!canSee) return <div className="panel">No autorizado.</div>
+  if (!canSee) return <div className="panel">Not authorized.</div>
 
   return (
     <div>
       <div className="panel grid grid-2">
         <div>
-          <label>Clase</label>
+          <label>Class</label>
           <select value={filterClass} onChange={e=>setFilterClass(e.target.value?Number(e.target.value):'')}>
-            <option value="">— Todas —</option>
+            <option value="">— All —</option>
             {filteredClasses.map(c=>(<option key={c.id} value={c.id}>{c.name}</option>))}
           </select>
         </div>
         <div>
           <label>Instructor</label>
           <select value={filterInstructor} onChange={e=>setFilterInstructor(e.target.value)}>
-            <option value="">— Todos —</option>
+            <option value="">— All —</option>
             {filteredInstructors.map(i=>(<option key={i.id} value={i.id}>{i.display_name}</option>))}
           </select>
         </div>
@@ -112,13 +112,13 @@ const ModifyClass: React.FC<{ user: User|null }> = ({ user }) => {
                       instructor_name: r.instructor_name
                     })}
                   >
-                    Editar
+                    Edit
                   </button>
                 </td>
               </tr>
             ))}
             {!rows.length && (
-              <tr><td colSpan={3} className="small">Selecciona una Clase y/o un Instructor para ver resultados.</td></tr>
+              <tr><td colSpan={3} className="small">Select a class or instructor to view results.</td></tr>
             )}
           </tbody>
         </table>
@@ -238,8 +238,8 @@ const AdminEditModal: React.FC<{
       title={`Editar · ${className} — ${instructorName}`}
       footer={
         <>
-          <button className="btn" onClick={onClose}>Cerrar</button>
-          <button className="btn primary" onClick={saveAll}>Guardar todo</button>
+          <button className="btn" onClick={onClose}>Close</button>
+          <button className="btn primary" onClick={saveAll}>Save all</button>
         </>
       }
     >
@@ -252,46 +252,46 @@ const AdminEditModal: React.FC<{
               <option value="">— Prop —</option>
               {allProps.map(p=>(<option key={p.id} value={p.id}>{p.name}</option>))}
             </select>
-            <button className="btn" onClick={addProp}>Añadir</button>
+            <button className="btn" onClick={addProp}>Add</button>
           </div>
           <ul style={{marginTop:12}}>
             {rowsProps.map(p=>(
               <li key={p.id} style={{display:'flex', justifyContent:'space-between', alignItems:'center', gap:8}}>
                 <span>{p.prop.name}</span>
-                <button className="btn danger" onClick={()=>removeProp(p.id)}>Quitar</button>
+                <button className="btn danger" onClick={()=>removeProp(p.id)}>Remove</button>
               </li>
             ))}
-            {!rowsProps.length && <li className="small">Sin props.</li>}
+            {!rowsProps.length && <li className="small">No props.</li>}
           </ul>
         </div>
 
         {/* IMÁGENES */}
         <div>
-          <h4>Imágenes</h4>
+          <h4>Pictures</h4>
           <input type="file" accept="image/*" onChange={e=>e.target.files && stageImage(e.target.files[0])} />
           {pendingImages.length > 0 && (
             <div style={{marginTop:8}}>
-              <div className="small">Pendientes de subir:</div>
+              <div className="small">Pending upload:</div>
               <ul>
                 {pendingImages.map((f,idx)=>(
                   <li key={idx} style={{display:'flex', gap:8, alignItems:'center', justifyContent:'space-between'}}>
                     <span style={{overflow:'hidden', textOverflow:'ellipsis'}}>{f.name}</span>
-                    <button className="btn" onClick={()=>removePendingAt(idx)}>Quitar</button>
+                    <button className="btn" onClick={()=>removePendingAt(idx)}>Remove</button>
                   </li>
                 ))}
               </ul>
             </div>
           )}
           <div style={{marginTop:12}}>
-            <div className="small">Guardadas:</div>
+            <div className="small">Saved:</div>
             <ul>
               {images.map(img=>(
                 <li key={img.id} style={{display:'flex', alignItems:'center', justifyContent:'space-between', gap:8}}>
                   <a className="nav-link" href={img.url} target="_blank">Ver</a>
-                  <button className="btn danger" onClick={()=>deleteImage(img.id)}>Eliminar</button>
+                  <button className="btn danger" onClick={()=>deleteImage(img.id)}>Delete</button>
                 </li>
               ))}
-              {images.length===0 && <li className="small">No hay imágenes guardadas.</li>}
+              {images.length===0 && <li className="small">No saved pictures yet.</li>}
             </ul>
           </div>
         </div>
@@ -299,7 +299,7 @@ const AdminEditModal: React.FC<{
 
       {/* NOTA */}
       <div className="panel" style={{marginTop:12}}>
-        <h4>Nota (una sola)</h4>
+        <h4>Note (only one)</h4>
         <textarea className="input" rows={4} value={note} onChange={e=>setNote(e.target.value)} />
       </div>
     </Modal>
