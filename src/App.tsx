@@ -23,6 +23,7 @@ export default function App() {
           <Route path="/manage" element={<ManageClass user={user} />} />
           <Route path="/modify" element={<ModifyClass user={user} />} />
           <Route path="/users" element={<ManageUsers user={user} />} />
+          <Route path="/props" element={<ManageProps user={user} />} />
         </Routes>
       </div>
     </HashRouter>
