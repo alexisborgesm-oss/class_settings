@@ -20,7 +20,7 @@ const ManageProps: React.FC<Props> = ({ user }) => {
 
   const createProp = async () => {
     const trimmed = name.trim()
-    if (!trimmed) { alert('Escribe el nombre del prop.'); return }
+    if (!trimmed) { alert('Write the name of the prop.'); return }
     const { error } = await supabase.from('props').insert({ name: trimmed })
     if (error) { alert('Error creando prop: ' + error.message); return }
     setName('')
@@ -31,7 +31,7 @@ const ManageProps: React.FC<Props> = ({ user }) => {
     const nuevo = prompt('New prop name:', p.name)
     if (nuevo === null) return // cancelado
     const trimmed = nuevo.trim()
-    if (!trimmed) { alert('Name can't be empty.'); return }
+    if (!trimmed) { alert('Name can not be empty.'); return }
     const ok = await confirm(`¿Rename "${p.name}" a "${trimmed}"?`)
     if (!ok) return
     const { error } = await supabase.from('props').update({ name: trimmed }).eq('id', p.id)
