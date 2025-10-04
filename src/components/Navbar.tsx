@@ -55,6 +55,11 @@ const Navbar: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, o
                 Modify Class
               </Link>
             )}
+            {canModifyClass && (
+              <Link to="/props" className="dropdown-item" onClick={()=>setOpen(false)}>
+                Manage Props
+              </Link>
+            )}
             {user && (
               <a
                 href="#"
