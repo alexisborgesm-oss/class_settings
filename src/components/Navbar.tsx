@@ -70,7 +70,7 @@ const Navbar: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, o
               </Link>
             )}
             {canManageUsers && (
-              <Link to="/ManageProps" className="dropdown-item" onClick={()=>setOpen(false)}>
+              <Link to="/props" className="dropdown-item" onClick={()=>setOpen(false)}>
                 Manage props
               </Link>
             )}
