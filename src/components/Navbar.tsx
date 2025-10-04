@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { User } from '@/types'
+import { supabase } from '@/utils/supabase'
+import Modal from '@/components/Modal'
 
 const Navbar: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, onLogout }) => {
   const [open, setOpen] = useState(false)
@@ -20,6 +22,71 @@ const Navbar: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, o
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [open])
+
+  // ====== Modal Cambiar usuario/contraseña ======
+  const [credOpen, setCredOpen] = useState(false)
+  const [username, setUsername] = useState(user?.username || '')
+  const [currPw, setCurrPw] = useState('')
+  const [newPw, setNewPw] = useState('')
+  const [newPw2, setNewPw2] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    // si cambia el usuario (prop), rehidratar el input
+    setUsername(user?.username || '')
+  }, [user?.username])
+
+  const openCreds = () => {
+    if (!user) return
+    setUsername(user.username || '')
+    setCurrPw('')
+    setNewPw('')
+    setNewPw2('')
+    setCredOpen(true)
+  }
+
+  const saveCreds = async () => {
+    if (!user) return
+    // Validaciones
+    if (!username.trim()) { alert('El usuario no puede estar vacío.'); return }
+    if (!currPw.trim()) { alert('Debes introducir tu contraseña actual.'); return }
+
+    if (newPw || newPw2) {
+      if (newPw.length < 8) { alert('La nueva contraseña debe tener al menos 8 caracteres.'); return }
+      if (newPw !== newPw2) { alert('Las contraseñas no coinciden.'); return }
+    }
+
+    setSaving(true)
+    try {
+      // 1) Verificar contraseña actual (plaintext según tu esquema actual)
+      const { data: row, error } = await supabase
+        .from('users')
+        .select('id, password')
+        .eq('id', user.id)
+        .single()
+
+      if (error || !row) throw new Error(error?.message || 'No se pudo validar el usuario.')
+      if (row.password !== currPw) { alert('La contraseña actual es incorrecta.'); return }
+
+      // 2) Preparar update
+      const update: any = { username: username.trim() }
+      if (newPw) update.password = newPw
+
+      const { error: upErr } = await supabase
+        .from('users')
+        .update(update)
+        .eq('id', user.id)
+
+      if (upErr) throw new Error(upErr.message)
+
+      alert('Credenciales actualizadas correctamente.')
+      setCredOpen(false)
+    } catch (e:any) {
+      alert('Error actualizando credenciales: ' + (e?.message || e))
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <nav className="navbar">
@@ -42,7 +109,15 @@ const Navbar: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, o
       </div>
 
       <div style={{display:'flex', alignItems:'center', gap:12}}>
-        <span className="user-pill">{user ? `${user.display_name} · ${user.role}` : 'No conectado'}</span>
+        {/* Al hacer click en el usuario -> abre modal de cambio de usuario/contraseña */}
+        <button
+          className="user-pill"
+          onClick={openCreds}
+          title="Cambiar usuario / contraseña"
+          style={{ cursor:'pointer' }}
+        >
+          {user ? `${user.display_name} · ${user.role}` : 'No conectado'}
+        </button>
 
         <div ref={ddRef} className={`dropdown ${open?'open':''}`}>
           <button className="btn" onClick={()=>setOpen(o=>!o)}>More ▾</button>
@@ -91,6 +166,69 @@ const Navbar: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, o
           </div>
         </div>
       </div>
+
+      {/* Modal Cambiar usuario / contraseña */}
+      <Modal
+        open={credOpen}
+        onClose={()=>setCredOpen(false)}
+        title="Cambiar usuario / contraseña"
+        footer={
+          <>
+            <button className="btn" onClick={()=>setCredOpen(false)} disabled={saving}>Cancelar</button>
+            <button className="btn primary" onClick={saveCreds} disabled={saving}>
+              {saving ? 'Guardando…' : 'Guardar'}
+            </button>
+          </>
+        }
+      >
+        <div className="grid grid-1" style={{ gap: 12 }}>
+          <div>
+            <label>Usuario</label>
+            <input
+              className="input"
+              value={username}
+              onChange={e=>setUsername(e.target.value)}
+              placeholder="Nuevo usuario"
+            />
+          </div>
+          <div>
+            <label>Contraseña actual</label>
+            <input
+              type="password"
+              className="input"
+              value={currPw}
+              onChange={e=>setCurrPw(e.target.value)}
+              placeholder="Tu contraseña actual"
+              autoComplete="current-password"
+            />
+          </div>
+          <div>
+            <label>Nueva contraseña</label>
+            <input
+              type="password"
+              className="input"
+              value={newPw}
+              onChange={e=>setNewPw(e.target.value)}
+              placeholder="(opcional) mín. 8 caracteres"
+              autoComplete="new-password"
+            />
+          </div>
+          <div>
+            <label>Confirmar nueva contraseña</label>
+            <input
+              type="password"
+              className="input"
+              value={newPw2}
+              onChange={e=>setNewPw2(e.target.value)}
+              placeholder="Repite la nueva contraseña"
+              autoComplete="new-password"
+            />
+          </div>
+          <div className="small">
+            Nota: si no deseas cambiar la contraseña, deja los campos de nueva contraseña vacíos.
+          </div>
+        </div>
+      </Modal>
     </nav>
   )
 }
