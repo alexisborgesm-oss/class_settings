@@ -151,4 +151,21 @@ html, body {
 .carousel-image-wrapper { width: 100%; max-width: 100%; overflow: hidden; display: flex; justify-content: center; }
 .carousel-image { width: 100%; height: auto; max-height: 70vh; object-fit: contain; border-radius: 8px; }
 .carousel-controls { margin-top: 8px; display: flex; align-items: center; gap: 12px; }
+/* Asegurar que el usuario sea visible también en móvil */
+.user-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--chip-bg, #f2f2f2);
+  font-size: 0.9rem;
+  border: none;
+}
+
+@media (max-width: 768px) {
+  .user-pill {
+    display: inline-flex; /* forzar visible en mobile */
+  }
+}
+
 
