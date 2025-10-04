@@ -102,7 +102,7 @@ const MyClassRow: React.FC<{ user: User, cls: Class, onUnassigned: () => void }>
       <td>{cls.name}</td>
       <td>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <button className="btn" onClick={() => setEditOpen(true)}>Editar</button>
+          <button className="btn" onClick={() => setEditOpen(true)}>Edit</button>
           <button className="btn danger" onClick={unassign}>Unassign</button>
         </div>
       </td>
