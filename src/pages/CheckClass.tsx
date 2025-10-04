@@ -138,7 +138,7 @@ const CheckClass: React.FC<{ user: User|null }> = () => {
       </div>
 
       <div className="panel">
-        <h3 style={{marginTop:0}}>Reference Images</h3>
+        <h3 style={{marginTop:0}}>Reference Pictures</h3>
         <ImageCarousel urls={images.map(i=>i.url)} />
       </div>
     </div>
