@@ -95,7 +95,7 @@ const Navbar: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, o
 
         {/* Links visibles SOLO en escritorio */}
         <div className="nav-links only-desktop">
-          <NavLink to="/" className={({isActive})=>`nav-link ${isActive?'active':''}`}>Check Class Setting</NavLink>
+          <NavLink to="/" className={({isActive})=>`nav-link ${isActive?'active':''}`}>Check Setting</NavLink>
 
           {/* My Classes al lado (solo instructores) */}
           {isInstructor && (
@@ -113,7 +113,7 @@ const Navbar: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, o
         <button
           className="user-pill"
           onClick={openCreds}
-          title="Cambiar usuario / contraseña"
+          title="Change user / passwd"
           style={{ cursor:'pointer' }}
         >
           {user ? `${user.display_name} · ${user.role}` : 'No conectado'}
@@ -124,7 +124,7 @@ const Navbar: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, o
           <div className="dropdown-menu">
             {/* En móvil, mostramos también rutas principales dentro del menú */}
             <Link to="/" className="dropdown-item only-mobile" onClick={()=>setOpen(false)}>
-              Check Class Setting
+              Check Setting
             </Link>
             {isInstructor && (
               <Link to="/my-classes" className="dropdown-item only-mobile" onClick={()=>setOpen(false)}>
