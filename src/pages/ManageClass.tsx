@@ -10,6 +10,8 @@ type Props = { user: User|null }
 const ManageClass: React.FC<Props> = ({ user }) => {
   const [name, setName] = useState('')
   const [savedClass, setSavedClass] = useState<Class|null>(null)
+  // IDs de clases asignadas al instructor logueado
+  const [assignedClassIds, setAssignedClassIds] = useState<Set<number>>(new Set())
 
   const [allInstructors, setAllInstructors] = useState<User[]>([])
   const [selectedInstructors, setSelectedInstructors] = useState<Set<string>>(new Set())
@@ -29,6 +31,26 @@ const ManageClass: React.FC<Props> = ({ user }) => {
       setClasses(cls||[])
     })()
   }, [])
+  useEffect(() => {
+  (async () => {
+    if (!isInstructor || !user?.id) {
+      setAssignedClassIds(new Set())
+      return
+    }
+    const { data, error } = await supabase
+      .from('instructor_classes')
+      .select('class_id')
+      .eq('instructor_id', user.id)
+
+    if (error) {
+      console.error('Error cargando asignaciones:', error.message)
+      setAssignedClassIds(new Set())
+      return
+    }
+    setAssignedClassIds(new Set((data || []).map(r => r.class_id)))
+  })()
+}, [isInstructor, user?.id])
+
 
   // Guardar clase y (si es Instructor) ofrecer auto-asignarse
   const saveClass = async () => {
@@ -133,7 +155,7 @@ const ManageClass: React.FC<Props> = ({ user }) => {
           <tbody>
             {classes.map(c=>{
               const canDelete = !!isAdminish
-              const showEdit = isInstructor
+              const showEdit = isInstructor && assignedClassIds.has(c.id)
               return (
                 <tr key={c.id}>
                   <td>{c.name}</td>
