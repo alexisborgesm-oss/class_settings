@@ -139,7 +139,7 @@ const unassignInstructors = async () => {
       .delete()
       .eq('class_id', savedClass.id)
       .eq('instructor_id', instr.id)
-    if (e1) { alert('Error desasignando: ' + e1.message); return }
+    if (e1) { alert('Error unsuscribing: ' + e1.message); return }
 
     // 2) borrar dependencias (props, imágenes, notas) de esta combinación
     await supabase.from('class_props').delete().eq('class_id', savedClass.id).eq('instructor_id', instr.id)
@@ -170,13 +170,13 @@ const unassignInstructors = async () => {
     instructor_id,
     class_id: savedClass.id,
   }))
-  if (!payload.length) { alert('Selecciona al menos un instructor.'); return }
+  if (!payload.length) { alert('Select at least one instructor.'); return }
 
   const { error } = await supabase
     .from('instructor_classes')
     .upsert(payload, { onConflict: ['instructor_id', 'class_id'] }) // ✅ evita duplicados
 
-  if (error) { alert('Error asignando: ' + error.message); return }
+  if (error) { alert('Error asociating: ' + error.message); return }
 
   await loadAssignedFor(savedClass.id) // refresca pre-marcados
   setOpenAssign(false)
@@ -185,9 +185,9 @@ const unassignInstructors = async () => {
 
 
   const deleteClass = async (c: Class) => {
-    if (!(await confirm('Eliminar la clase también borrará props, imágenes y nota asociadas. ¿Seguro?'))) return
+    if (!(await confirm('Deleting the class will also delete props, images, and the associated note. Continue'))) return
     const { error } = await supabase.rpc('delete_class_cascade', { p_class_id: c.id })
-    if (error) { alert('Error eliminando: '+error.message); return }
+    if (error) { alert('Error deleting: '+error.message); return }
     setClasses(prev=>prev.filter(x=>x.id!==c.id))
   }
 
@@ -214,7 +214,7 @@ const unassignInstructors = async () => {
         </div>
         <div style={{display:'flex', alignItems:'end', gap:8}}>
           <button className="btn primary" onClick={saveClass}>Save</button>
-          {savedClass && <button className="btn accent" onClick={openAssignModal}>Asign instructor</button>}
+          {savedClass && <button className="btn accent" onClick={openAssignModal}>Assign instructor</button>}
         </div>
       </div>
 
@@ -276,7 +276,7 @@ const unassignInstructors = async () => {
               {i.display_name}
             </label>
           ))}
-          {!allInstructors.length && <div className="small">No hay instructores creados.</div>}
+          {!allInstructors.length && <div className="small">No instructors created yet.</div>}
         </div>
       </Modal>
 
@@ -292,7 +292,7 @@ const unassignInstructors = async () => {
   footer={
     <>
       <button className="btn" onClick={() => setOpenUnassign(false)}>Cancel</button>
-      <button className="btn danger" onClick={unassignInstructors}>Save</button>
+      <button className="btn danger" onClick={unassignInstructors}>Unassign</button>
     </>
   }
 >
@@ -313,7 +313,7 @@ const unassignInstructors = async () => {
         {i.display_name}
       </label>
     ))}
-    {!instructorsForUnassign.length && <div className="small">No hay instructores asignados aún.</div>}
+    {!instructorsForUnassign.length && <div className="small">No assigned instructors yet.</div>}
   </div>
 </Modal>
 
