@@ -160,7 +160,7 @@ const Navbar: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, o
                 className="dropdown-item"
                 onClick={(e)=>{ e.preventDefault(); setOpen(false); onLogout(); }}
               >
-                Salir
+                Log out
               </a>
             )}
           </div>
@@ -171,61 +171,61 @@ const Navbar: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, o
       <Modal
         open={credOpen}
         onClose={()=>setCredOpen(false)}
-        title="Cambiar usuario / contraseña"
+        title="Change user / passwd"
         footer={
           <>
-            <button className="btn" onClick={()=>setCredOpen(false)} disabled={saving}>Cancelar</button>
+            <button className="btn" onClick={()=>setCredOpen(false)} disabled={saving}>Cancel</button>
             <button className="btn primary" onClick={saveCreds} disabled={saving}>
-              {saving ? 'Guardando…' : 'Guardar'}
+              {saving ? 'Saving…' : 'Save'}
             </button>
           </>
         }
       >
         <div className="grid grid-1" style={{ gap: 12 }}>
           <div>
-            <label>Usuario</label>
+            <label>User</label>
             <input
               className="input"
               value={username}
               onChange={e=>setUsername(e.target.value)}
-              placeholder="Nuevo usuario"
+              placeholder="New user"
             />
           </div>
           <div>
-            <label>Contraseña actual</label>
+            <label>Current passwd</label>
             <input
               type="password"
               className="input"
               value={currPw}
               onChange={e=>setCurrPw(e.target.value)}
-              placeholder="Tu contraseña actual"
+              placeholder="Current passwd"
               autoComplete="current-password"
             />
           </div>
           <div>
-            <label>Nueva contraseña</label>
+            <label>New passwd</label>
             <input
               type="password"
               className="input"
               value={newPw}
               onChange={e=>setNewPw(e.target.value)}
-              placeholder="(opcional) mín. 8 caracteres"
+              placeholder="(opcional) mín. 8 characters"
               autoComplete="new-password"
             />
           </div>
           <div>
-            <label>Confirmar nueva contraseña</label>
+            <label>Confirm new passwd</label>
             <input
               type="password"
               className="input"
               value={newPw2}
               onChange={e=>setNewPw2(e.target.value)}
-              placeholder="Repite la nueva contraseña"
+              placeholder="Repeat the new passwd"
               autoComplete="new-password"
             />
           </div>
           <div className="small">
-            Nota: si no deseas cambiar la contraseña, deja los campos de nueva contraseña vacíos.
+            Note: If you don’t want to change the password, leave the new password fields empty.
           </div>
         </div>
       </Modal>
