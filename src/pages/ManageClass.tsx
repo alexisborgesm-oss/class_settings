@@ -125,7 +125,7 @@ const openUnassignFor = async (cls: Class) => {
 const unassignInstructors = async () => {
   if (!savedClass) return
   const ok = await confirm(
-    'Si desasocias instructores se borrarán también props, imágenes y notas vinculadas a esta clase para esos instructores. ¿Deseas continuar?'
+    'Unassigning instructors will also delete props, images, and notes linked to this class for them.Continue?'
   )
   if (!ok) return
 
