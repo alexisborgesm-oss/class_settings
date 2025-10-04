@@ -157,7 +157,7 @@ html, body {
   align-items: center;
   padding: 6px 10px;
   border-radius: 999px;
-  background: var(--chip-bg, #f2f2f2);
+
   font-size: 0.9rem;
   border: none;
 }
