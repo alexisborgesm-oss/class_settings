@@ -27,6 +27,7 @@ const Navbar: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, o
         {/* Links visibles SOLO en escritorio */}
         <div className="nav-links only-desktop">
           <NavLink to="/" className={({isActive})=>`nav-link ${isActive?'active':''}`}>Check Class Setting</NavLink>
+          <NavLink to="/my-classes" className={({isActive})=>`nav-link ${isActive?'active':''}`}>My Classes</NavLink>
           <NavLink to="/manage" className={({isActive})=>`nav-link ${isActive?'active':''}`}>Manage Class</NavLink>
         </div>
       </div>
