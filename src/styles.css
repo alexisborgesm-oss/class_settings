@@ -38,7 +38,7 @@ html, body, #root { height: 100%; margin: 0; background: var(--bg); color: var(-
 .dropdown-item:hover { background: #1b2130; }
 
 .panel {
-  background: var(--panel); border: 1px solid #1f242e; border-radius: 16px; padding: 16px; margin: 1% 0;
+  background: var(--panel); border: 1px solid #1f242e; border-radius: 16px; padding: 16px; margin: 16px 0;
 }
 
 .input, select, textarea {
@@ -167,5 +167,3 @@ html, body {
     display: inline-flex; /* forzar visible en mobile */
   }
 }
-
-
