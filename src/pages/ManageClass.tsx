@@ -50,17 +50,17 @@ const [instructorsForUnassign, setInstructorsForUnassign] = useState<User[]>([])
 
   // Guardar clase y (si es Instructor) ofrecer auto-asignarse
   const saveClass = async () => {
-    if (!name.trim()) { alert('Escribe un nombre'); return }
-    if (!(await confirm('¿Seguro que deseas guardar esta clase?'))) return
+    if (!name.trim()) { alert('Write a name'); return }
+    if (!(await confirm('¿Sure to save this class?'))) return
 
     const { data, error } = await supabase.from('classes').insert({ name }).select().single()
-    if (error) { alert('Error guardando clase: '+error.message); return }
+    if (error) { alert('Error saving class: '+error.message); return }
 
     setSavedClass(data)
     setClasses(prev=>[data, ...prev])
 
     if (isInstructor) {
-      const asignarse = await confirm('¿Quieres asignarte esta clase?')
+      const asignarse = await confirm('¿Assign yourself this class?')
       if (asignarse) {
         const { error: errAssign } = await supabase.from('instructor_classes')
           .insert({ class_id: data.id, instructor_id: user!.id })
