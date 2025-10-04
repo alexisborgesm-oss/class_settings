@@ -1,222 +1,97 @@
-import React, { useEffect, useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { supabase } from '@/utils/supabase'
-import Modal from '@/components/Modal'
-import { confirm } from '@/components/Confirm'
+import React, { useEffect, useRef, useState } from 'react'
+import { Link, NavLink } from 'react-router-dom'
 import { User } from '@/types'
 
-type Props = { user: User | null, setUser: (u: User | null) => void }
+const Navbar: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, onLogout }) => {
+  const [open, setOpen] = useState(false)
+  const isInstructor = !!user && user.role === 'Instructor'
+  const canManageUsers = !!user && (user.role === 'super_admin' || user.role === 'admin')
+  const canModifyClass = canManageUsers
+  const canManageClass = !!user && (user.role === 'super_admin' || user.role === 'admin' || user.role === 'Instructor')
 
-const Navbar: React.FC<Props> = ({ user, setUser }) => {
-  const navigate = useNavigate()
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const [pwOpen, setPwOpen] = useState(false)
-
-  const [currPw, setCurrPw] = useState('')
-  const [newPw, setNewPw] = useState('')
-  const [newPw2, setNewPw2] = useState('')
-  const [pwLoading, setPwLoading] = useState(false)
-
+  // Cierra por click fuera
+  const ddRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768)
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-  const logout = async () => {
-    if (!(await confirm('Are you sure you want to log out?'))) return
-    await supabase.auth.signOut()
-    setUser(null)
-    navigate('/')
-  }
-
-  const resetPwForm = () => {
-    setCurrPw('')
-    setNewPw('')
-    setNewPw2('')
-  }
-
-  // === Change Password Logic (no bcryptjs) ===
-  const changePassword = async () => {
-    if (!user) return
-    if (!currPw.trim() || !newPw.trim() || !newPw2.trim()) {
-      alert('Please fill in all fields.')
-      return
-    }
-    if (newPw.length < 8) {
-      alert('New password must be at least 8 characters.')
-      return
-    }
-    if (newPw !== newPw2) {
-      alert('Passwords do not match.')
-      return
-    }
-
-    setPwLoading(true)
-    try {
-      const { data: row, error } = await supabase
-        .from('users')
-        .select('id, password')
-        .eq('id', user.id)
-        .single()
-
-      if (error || !row) throw new Error(error?.message || 'User not found')
-
-      if (row.password !== currPw) {
-        alert('Current password is incorrect.')
-        return
+    function handleClickOutside(e: MouseEvent) {
+      if (open && ddRef.current && !ddRef.current.contains(e.target as Node)) {
+        setOpen(false)
       }
-
-      const { error: upErr } = await supabase
-        .from('users')
-        .update({ password: newPw })
-        .eq('id', user.id)
-
-      if (upErr) throw new Error(upErr.message)
-
-      alert('Password updated successfully.')
-      setPwOpen(false)
-      resetPwForm()
-    } catch (e: any) {
-      alert('Error updating password: ' + (e?.message || e))
-    } finally {
-      setPwLoading(false)
     }
-  }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [open])
 
   return (
-    <>
-      <nav className="navbar">
-        <div className="nav-left">
-          <span className="nav-title">Class Settings</span>
-        </div>
+    <nav className="navbar">
+      <div style={{display:'flex', gap:16, alignItems:'center'}}>
+        <span className="brand">Class Settings</span>
 
-        {!isMobile ? (
-          <div className="nav-links">
-            <Link to="/check-class" className="nav-link">Check Class Setting</Link>
-            {user?.role === 'Instructor' && (
-              <Link to="/my-classes" className="nav-link">My Classes</Link>
+        {/* Links visibles SOLO en escritorio */}
+        <div className="nav-links only-desktop">
+          <NavLink to="/" className={({isActive})=>`nav-link ${isActive?'active':''}`}>Check Class Setting</NavLink>
+
+          {/* My Classes al lado (solo instructores) */}
+          {isInstructor && (
+            <NavLink to="/my-classes" className={({isActive})=>`nav-link ${isActive?'active':''}`}>
+              My Classes
+            </NavLink>
+          )}
+
+          {/* Manage Class se mueve a More, así que ya no va aquí */}
+        </div>
+      </div>
+
+      <div style={{display:'flex', alignItems:'center', gap:12}}>
+        <span className="user-pill">{user ? `${user.display_name} · ${user.role}` : 'No conectado'}</span>
+
+        <div ref={ddRef} className={`dropdown ${open?'open':''}`}>
+          <button className="btn" onClick={()=>setOpen(o=>!o)}>More ▾</button>
+          <div className="dropdown-menu">
+            {/* En móvil, mostramos también rutas principales dentro del menú */}
+            <Link to="/" className="dropdown-item only-mobile" onClick={()=>setOpen(false)}>
+              Check Class Setting
+            </Link>
+            {isInstructor && (
+              <Link to="/my-classes" className="dropdown-item only-mobile" onClick={()=>setOpen(false)}>
+                My Classes
+              </Link>
             )}
 
-            <div className="nav-dropdown">
-              <button
-                className="nav-link"
-                onClick={() => setMenuOpen(!menuOpen)}
-              >
-                More ▾
-              </button>
-              {menuOpen && (
-                <div
-                  className="dropdown-menu"
-                  onMouseLeave={() => setMenuOpen(false)}
-                >
-                  {(user?.role === 'super_admin' || user?.role === 'admin') && (
-                    <>
-                      <Link to="/manage-users" className="dropdown-item">Manage Users</Link>
-                      <Link to="/modify-class" className="dropdown-item">Modify Class</Link>
-                    </>
-                  )}
-                  <Link to="/manage-class" className="dropdown-item">Manage Class</Link>
-                  <Link to="/manage-props" className="dropdown-item">Manage Props</Link>
-                  <button className="dropdown-item" onClick={logout}>Log out</button>
-                </div>
-              )}
-            </div>
+            {/* Manage Class ahora vive en More para todos los que pueden usarla */}
+            {canManageClass && (
+              <Link to="/manage" className="dropdown-item" onClick={()=>setOpen(false)}>
+                Manage Class
+              </Link>
+            )}
 
+            {canManageUsers && (
+              <Link to="/users" className="dropdown-item" onClick={()=>setOpen(false)}>
+                Manage users
+              </Link>
+            )}
+            {canManageUsers && (
+              <Link to="/props" className="dropdown-item" onClick={()=>setOpen(false)}>
+                Manage props
+              </Link>
+            )}
+            {canModifyClass && (
+              <Link to="/modify" className="dropdown-item" onClick={()=>setOpen(false)}>
+                Modify Class
+              </Link>
+            )}
             {user && (
-              <button
-                className="nav-link"
-                style={{ marginLeft: 12 }}
-                onClick={() => setPwOpen(true)}
+              <a
+                href="#"
+                className="dropdown-item"
+                onClick={(e)=>{ e.preventDefault(); setOpen(false); onLogout(); }}
               >
-                {user.display_name || user.username}
-              </button>
+                Salir
+              </a>
             )}
           </div>
-        ) : (
-          <div className="nav-links">
-            <div className="nav-dropdown">
-              <button
-                className="nav-link"
-                onClick={() => setMenuOpen(!menuOpen)}
-              >
-                ☰ Menu
-              </button>
-              {menuOpen && (
-                <div
-                  className="dropdown-menu"
-                  onMouseLeave={() => setMenuOpen(false)}
-                >
-                  <Link to="/check-class" className="dropdown-item">Check Class Setting</Link>
-                  {user?.role === 'Instructor' && (
-                    <Link to="/my-classes" className="dropdown-item">My Classes</Link>
-                  )}
-                  <Link to="/manage-class" className="dropdown-item">Manage Class</Link>
-                  {(user?.role === 'super_admin' || user?.role === 'admin') && (
-                    <>
-                      <Link to="/manage-users" className="dropdown-item">Manage Users</Link>
-                      <Link to="/modify-class" className="dropdown-item">Modify Class</Link>
-                    </>
-                  )}
-                  <Link to="/manage-props" className="dropdown-item">Manage Props</Link>
-                  <button className="dropdown-item" onClick={() => setPwOpen(true)}>
-                    {user?.display_name || user?.username} (Change Password)
-                  </button>
-                  <button className="dropdown-item" onClick={logout}>Log out</button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </nav>
-
-      {/* === Modal: Change Password === */}
-      <Modal
-        open={pwOpen}
-        onClose={() => setPwOpen(false)}
-        title="Change Password"
-        footer={
-          <>
-            <button className="btn" onClick={() => setPwOpen(false)}>Cancel</button>
-            <button className="btn primary" disabled={pwLoading} onClick={changePassword}>
-              {pwLoading ? 'Saving...' : 'Save'}
-            </button>
-          </>
-        }
-      >
-        <div className="grid grid-1" style={{ gap: 12 }}>
-          <div>
-            <label>Current Password</label>
-            <input
-              type="password"
-              className="input"
-              value={currPw}
-              onChange={e => setCurrPw(e.target.value)}
-            />
-          </div>
-          <div>
-            <label>New Password</label>
-            <input
-              type="password"
-              className="input"
-              value={newPw}
-              onChange={e => setNewPw(e.target.value)}
-            />
-          </div>
-          <div>
-            <label>Confirm New Password</label>
-            <input
-              type="password"
-              className="input"
-              value={newPw2}
-              onChange={e => setNewPw2(e.target.value)}
-            />
-          </div>
         </div>
-      </Modal>
-    </>
+      </div>
+    </nav>
   )
 }
 
