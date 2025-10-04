@@ -12,7 +12,7 @@ const ManageProps: React.FC<Props> = ({ user }) => {
 
   const loadProps = async () => {
     const { data, error } = await supabase.from('props').select('*').order('name', { ascending: true })
-    if (error) { alert('Error cargando props: ' + error.message); return }
+    if (error) { alert('Error loading props: ' + error.message); return }
     setAllProps(data || [])
   }
 
@@ -22,7 +22,7 @@ const ManageProps: React.FC<Props> = ({ user }) => {
     const trimmed = name.trim()
     if (!trimmed) { alert('Write the name of the prop.'); return }
     const { error } = await supabase.from('props').insert({ name: trimmed })
-    if (error) { alert('Error creando prop: ' + error.message); return }
+    if (error) { alert('Error creating prop: ' + error.message); return }
     setName('')
     await loadProps()
   }
@@ -59,7 +59,7 @@ const ManageProps: React.FC<Props> = ({ user }) => {
           <label>Name</label>
           <input
             className="input"
-            placeholder="Ej. Mat, Bloques, Correa…"
+            placeholder="Ej. Mat, Blocks, Straps…"
             value={name}
             onChange={e => setName(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') createProp() }}
