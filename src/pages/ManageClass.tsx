@@ -9,6 +9,8 @@ type Props = { user: User|null }
 const ManageClass: React.FC<Props> = ({ user }) => {
   const [name, setName] = useState('')
   const [savedClass, setSavedClass] = useState<Class|null>(null)
+  const [openUnassign, setOpenUnassign] = useState(false)
+const [instructorsForUnassign, setInstructorsForUnassign] = useState<User[]>([])
 
   const [allInstructors, setAllInstructors] = useState<User[]>([])
   const [selectedInstructors, setSelectedInstructors] = useState<Set<string>>(new Set()) // lo que se guardará
@@ -104,6 +106,51 @@ const ManageClass: React.FC<Props> = ({ user }) => {
     await loadAssignedFor(cls.id)
     setOpenAssign(true)
   }
+  // Abrir modal de UNASSIGN: carga SOLO instructores ya asociados y los preselecciona
+const openUnassignFor = async (cls: Class) => {
+  setSavedClass(cls)
+  const { data, error } = await supabase
+    .from('instructor_classes')
+    .select('instructor:users(*)')
+    .eq('class_id', cls.id)
+  if (error) { alert('Error cargando instructores: ' + error.message); return }
+
+  const list = ((data as any) || []).map((r: any) => r.instructor)
+  setInstructorsForUnassign(list)
+  setSelectedInstructors(new Set(list.map((u: User) => u.id))) // pre-marcados
+  setOpenUnassign(true)
+}
+
+// Guardar UNASSIGN: desmarca => elimina asociación + borra props/imagenes/notas
+const unassignInstructors = async () => {
+  if (!savedClass) return
+  const ok = await confirm(
+    'Si desasocias instructores se borrarán también props, imágenes y notas vinculadas a esta clase para esos instructores. ¿Deseas continuar?'
+  )
+  if (!ok) return
+
+  const keep = new Set(selectedInstructors)
+  const toRemove = instructorsForUnassign.filter(i => !keep.has(i.id))
+
+  for (const instr of toRemove) {
+    // 1) eliminar asociación
+    const { error: e1 } = await supabase
+      .from('instructor_classes')
+      .delete()
+      .eq('class_id', savedClass.id)
+      .eq('instructor_id', instr.id)
+    if (e1) { alert('Error desasignando: ' + e1.message); return }
+
+    // 2) borrar dependencias (props, imágenes, notas) de esta combinación
+    await supabase.from('class_props').delete().eq('class_id', savedClass.id).eq('instructor_id', instr.id)
+    await supabase.from('class_images').delete().eq('class_id', savedClass.id).eq('instructor_id', instr.id)
+    await supabase.from('class_notes').delete().eq('class_id', savedClass.id).eq('instructor_id', instr.id)
+  }
+
+  setOpenUnassign(false)
+  alert('Desasignación completada.')
+}
+
 
   const toggleInstructor = (id: string) => {
     // Si es Instructor, solo puede togglearse a sí mismo
@@ -115,24 +162,27 @@ const ManageClass: React.FC<Props> = ({ user }) => {
     })
   }
 
-  const assignInstructors = async () => {
-    if (!savedClass) return
-    if (!(await confirm('¿Confirmas asignar la clase a los instructores seleccionados?'))) return
+ const assignInstructors = async () => {
+  if (!savedClass) return
+  if (!(await confirm('¿Confirm assigning this class to the selected instructors?'))) return
 
-    const payload = Array.from(selectedInstructors).map(instructor_id=>({
-      instructor_id, class_id: savedClass.id
-    }))
-    if (!payload.length) { alert('Selecciona al menos un instructor.'); return }
+  const payload = Array.from(selectedInstructors).map(instructor_id => ({
+    instructor_id,
+    class_id: savedClass.id,
+  }))
+  if (!payload.length) { alert('Selecciona al menos un instructor.'); return }
 
-    // upsert evita duplicados si ya estaban asignados
-    const { error } = await supabase.from('instructor_classes').insert(payload, { upsert: true })
-    if (error) { alert('Error asignando: '+error.message); return }
+  const { error } = await supabase
+    .from('instructor_classes')
+    .upsert(payload, { onConflict: ['instructor_id', 'class_id'] }) // ✅ evita duplicados
 
-    // refrescar estado visual
-    await loadAssignedFor(savedClass.id)
-    setOpenAssign(false)
-    alert('Asignaciones guardadas.')
-  }
+  if (error) { alert('Error asignando: ' + error.message); return }
+
+  await loadAssignedFor(savedClass.id) // refresca pre-marcados
+  setOpenAssign(false)
+  alert('Assignments saved successfully.')
+}
+
 
   const deleteClass = async (c: Class) => {
     if (!(await confirm('Eliminar la clase también borrará props, imágenes y nota asociadas. ¿Seguro?'))) return
@@ -189,6 +239,8 @@ const ManageClass: React.FC<Props> = ({ user }) => {
                       <button className="btn accent" onClick={()=>openAssignFor(c)}>Assign instructor</button>
                       {canDelete && <button className="btn danger" onClick={()=>deleteClass(c)}>Delete</button>}
                       {showEdit && <EditInstructorClass classId={c.id} user={user!} />}
+                      {isAdminish && <button className="btn" onClick={() => openUnassignFor(c)}>Unassign</button>}
+
                     </div>
                   </td>
                 </tr>
@@ -233,6 +285,39 @@ const ManageClass: React.FC<Props> = ({ user }) => {
         {assigned.length ? <ul>{assigned.map(a=><li key={a.id}>{a.display_name}</li>)}</ul>
         : <div className="small">This class has not been assigned yet.</div>}
       </Modal>
+<Modal
+  open={openUnassign}
+  onClose={() => setOpenUnassign(false)}
+  title={`Unassign instructors - ${savedClass?.name ?? ''}`}
+  footer={
+    <>
+      <button className="btn" onClick={() => setOpenUnassign(false)}>Cancel</button>
+      <button className="btn danger" onClick={unassignInstructors}>Save</button>
+    </>
+  }
+>
+  <div className="grid grid-2">
+    {instructorsForUnassign.map(i => (
+      <label key={i.id} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <input
+          type="checkbox"
+          checked={selectedInstructors.has(i.id)}
+          onChange={() => {
+            setSelectedInstructors(prev => {
+              const n = new Set(prev)
+              if (n.has(i.id)) n.delete(i.id); else n.add(i.id)
+              return n
+            })
+          }}
+        />
+        {i.display_name}
+      </label>
+    ))}
+    {!instructorsForUnassign.length && <div className="small">No hay instructores asignados aún.</div>}
+  </div>
+</Modal>
+
+      
     </div>
   )
 }
