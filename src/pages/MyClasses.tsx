@@ -277,7 +277,17 @@ const InstructorEditModal: React.FC<{
         {/* IMÁGENES */}
         <div>
           <h4>Imágenes</h4>
-          <input type="file" accept="image/*" onChange={e => e.target.files && stageImage(e.target.files[0])} />
+        
+          <label className="btn" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+  Select File
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e) => e.target.files && stageImage(e.target.files[0])}
+    style={{ display: 'none' }}
+  />
+</label>
+
           {pendingImages.length > 0 && (
             <div style={{ marginTop: 8 }}>
               <div className="small">Pending upload:</div>
