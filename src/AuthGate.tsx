@@ -31,7 +31,7 @@ const AuthGate: React.FC<{ onUser: (u: User|null)=>void }> = ({ onUser }) => {
   return (
     <div className="container">
       <div className="panel" style={{maxWidth:480, margin:'10vh auto'}}>
-        <h2>Enter</h2>
+        <h2>Class Settings</h2>
         <form onSubmit={login} className="grid" style={{gap:12}}>
           <input className="input" value={username} onChange={e=>setUsername(e.target.value)} placeholder="User" />
           <input className="input" type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Passwd" />
