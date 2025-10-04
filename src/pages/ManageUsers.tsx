@@ -16,10 +16,10 @@ const ManageUsers: React.FC<{ user: User|null }> = ({ user }) => {
     })()
   }, [])
 
-  if (!canSee) return <div className="panel">No autorizado.</div>
+  if (!canSee) return <div className="panel">Not authorized.</div>
 
   const save = async () => {
-    if (!edit.username || !edit.display_name || !edit.role || !edit.password) { alert('Completa todos los campos'); return }
+    if (!edit.username || !edit.display_name || !edit.role || !edit.password) { alert('All fields are required'); return }
     if (edit.id) {
       const { error } = await supabase.from('users').update({
         username: edit.username, display_name: edit.display_name, role: edit.role, password: edit.password
@@ -37,7 +37,7 @@ const ManageUsers: React.FC<{ user: User|null }> = ({ user }) => {
   }
 
   const remove = async (u: User) => {
-    if (!(await confirm('Eliminar usuario?'))) return
+    if (!(await confirm('Delete user?'))) return
     const { error } = await supabase.from('users').delete().eq('id', u.id)
     if (error) { alert(error.message); return }
     setRows(prev=>prev.filter(r=>r.id!==u.id))
@@ -47,7 +47,7 @@ const ManageUsers: React.FC<{ user: User|null }> = ({ user }) => {
 
   return (
     <div className="panel">
-      <h3 style={{marginTop:0}}>Usuarios</h3>
+      <h3 style={{marginTop:0}}>Users</h3>
       <div className="grid" style={{gridTemplateColumns:'1fr 1fr 1fr 1fr auto', gap:8, marginBottom:12}}>
         <input className="input" placeholder="username" value={edit.username||''} onChange={e=>setEdit({...edit, username:e.target.value})} />
         <input className="input" placeholder="display name" value={edit.display_name||''} onChange={e=>setEdit({...edit, display_name:e.target.value})} />
@@ -56,11 +56,11 @@ const ManageUsers: React.FC<{ user: User|null }> = ({ user }) => {
           {roles.map(r=>(<option key={r} value={r}>{r}</option>))}
         </select>
         <input className="input" placeholder="password" value={edit.password||''} onChange={e=>setEdit({...edit, password:e.target.value})} />
-        <button className="btn primary" onClick={save}>Guardar</button>
+        <button className="btn primary" onClick={save}>Save</button>
       </div>
 
       <table className="table">
-        <thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th></th></tr></thead>
+        <thead><tr><th>Usuario</th><th>Name</th><th>Rol</th><th></th></tr></thead>
         <tbody>
           {rows.map(r=>(
             <tr key={r.id}>
@@ -68,8 +68,8 @@ const ManageUsers: React.FC<{ user: User|null }> = ({ user }) => {
               <td>{r.display_name}</td>
               <td><span className="badge">{r.role}</span></td>
               <td style={{display:'flex', gap:8}}>
-                <button className="btn" onClick={()=>setEdit(r)}>Editar</button>
-                <button className="btn danger" onClick={()=>remove(r)}>Eliminar</button>
+                <button className="btn" onClick={()=>setEdit(r)}>Edit</button>
+                <button className="btn danger" onClick={()=>remove(r)}>Delete</button>
               </td>
             </tr>
           ))}
