@@ -12,11 +12,7 @@ const ManageClass: React.FC<Props> = ({ user }) => {
   const [savedClass, setSavedClass] = useState<Class|null>(null)
   const [openUnassign, setOpenUnassign] = useState(false)
 const [instructorsForUnassign, setInstructorsForUnassign] = useState<User[]>([])
-  const filteredClasses = useMemo(() => {
-  const q = name.trim().toLowerCase()
-  if (!q) return classes
-  return classes.filter(c => c.name.toLowerCase().includes(q))
-}, [name, classes])
+
 
 
   const [allInstructors, setAllInstructors] = useState<User[]>([])
@@ -233,7 +229,7 @@ const unassignInstructors = async () => {
             <tr><th>Class name</th><th style={{width:420}}>Actions</th></tr>
           </thead>
           <tbody>
-            {filteredClasses.map(c=>{
+            {classes.map(c=>{
               const canDelete = !!isAdminish
               const showEdit = isInstructor && assignedClassIds.has(c.id) // <- solo si está asignada
 
