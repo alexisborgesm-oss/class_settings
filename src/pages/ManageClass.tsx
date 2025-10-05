@@ -21,7 +21,11 @@ const [instructorsForUnassign, setInstructorsForUnassign] = useState<User[]>([])
   const [openAssign, setOpenAssign] = useState(false)
 
   const [classes, setClasses] = useState<Class[]>([])
-
+const filteredClasses = useMemo(() => {
+  const q = name.trim().toLowerCase()
+  if (!q) return classes
+  return classes.filter(c => c.name.toLowerCase().includes(q))
+}, [name, classes])
   const isInstructor = user?.role === 'Instructor'
   const isAdminish = user && (user.role === 'super_admin' || user.role === 'admin')
 
@@ -229,7 +233,7 @@ const unassignInstructors = async () => {
             <tr><th>Class name</th><th style={{width:420}}>Actions</th></tr>
           </thead>
           <tbody>
-            {classes.map(c=>{
+            {filteredClasses.map(c=>{
               const canDelete = !!isAdminish
               const showEdit = isInstructor && assignedClassIds.has(c.id) // <- solo si está asignada
 
