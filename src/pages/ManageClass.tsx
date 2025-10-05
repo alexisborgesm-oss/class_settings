@@ -3,6 +3,7 @@ import { supabase } from '@/utils/supabase'
 import { Class, ClassImage, ClassProp, PropItem, User } from '@/types'
 import Modal from '@/components/Modal'
 import { confirm } from '@/components/Confirm'
+import React, { useEffect, useState, useMemo } from 'react'
 
 type Props = { user: User|null }
 
@@ -11,6 +12,12 @@ const ManageClass: React.FC<Props> = ({ user }) => {
   const [savedClass, setSavedClass] = useState<Class|null>(null)
   const [openUnassign, setOpenUnassign] = useState(false)
 const [instructorsForUnassign, setInstructorsForUnassign] = useState<User[]>([])
+  const filteredClasses = useMemo(() => {
+  const q = name.trim().toLowerCase()
+  if (!q) return classes
+  return classes.filter(c => c.name.toLowerCase().includes(q))
+}, [name, classes])
+
 
   const [allInstructors, setAllInstructors] = useState<User[]>([])
   const [selectedInstructors, setSelectedInstructors] = useState<Set<string>>(new Set()) // lo que se guardará
@@ -226,7 +233,7 @@ const unassignInstructors = async () => {
             <tr><th>Class name</th><th style={{width:420}}>Actions</th></tr>
           </thead>
           <tbody>
-            {classes.map(c=>{
+            {filteredClasses.map(c=>{
               const canDelete = !!isAdminish
               const showEdit = isInstructor && assignedClassIds.has(c.id) // <- solo si está asignada
 
