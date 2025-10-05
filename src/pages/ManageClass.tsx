@@ -3,7 +3,7 @@ import { supabase } from '@/utils/supabase'
 import { Class, ClassImage, ClassProp, PropItem, User } from '@/types'
 import Modal from '@/components/Modal'
 import { confirm } from '@/components/Confirm'
-//import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 
 type Props = { user: User|null }
 
