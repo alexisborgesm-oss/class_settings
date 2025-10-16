@@ -154,6 +154,11 @@ const Navbar: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, o
                 Modify Class
               </Link>
             )}
+            {(user?.role === 'super_admin' || user?.role === 'admin') && (
+  <Link to="/tracking" className="dropdown-item" onClick={()=>setOpen(false)}>
+    Class Tracking
+  </Link>
+)}
             {user && (
               <a
                 href="#"
