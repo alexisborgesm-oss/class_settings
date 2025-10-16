@@ -231,27 +231,44 @@ const DetailModal: React.FC<{
   activity: Record<string, boolean>
 }> = ({ open, onClose, instructor, classesByInstr, activity }) => {
   if (!open || !instructor) return null
-  const list = classesByInstr[instructor.id] || []
-  const missing = list.filter((c) => !activity[`${instructor.id}::${c.class_id}`])
+
+  const all = classesByInstr[instructor.id] || []
+  const pending = all.filter(c => !activity[`${instructor.id}::${c.class_id}`])
+  const updated = all.filter(c =>  activity[`${instructor.id}::${c.class_id}`])
 
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title={`Pending classes · ${instructor.name}`}
+      title={`Details · ${instructor.name}`}
       footer={<button className="btn" onClick={onClose}>Close</button>}
     >
-      {missing.length ? (
-        <ul>
-          {missing.map((c) => (
-            <li key={c.class_id}>{c.class_name}</li>
-          ))}
-        </ul>
-      ) : (
-        <div className="small">All classes for this instructor already have notes/props/images.</div>
-      )}
+      <div className="grid grid-2" style={{ gap: 16 }}>
+        <div>
+          <h4 style={{ marginTop: 0 }}>Pending ({pending.length})</h4>
+          {pending.length ? (
+            <ul style={{ maxHeight: 300, overflow: 'auto' }}>
+              {pending.map(c => <li key={c.class_id}>{c.class_name}</li>)}
+            </ul>
+          ) : (
+            <div className="small">No pending classes.</div>
+          )}
+        </div>
+
+        <div>
+          <h4 style={{ marginTop: 0 }}>Updated ({updated.length})</h4>
+          {updated.length ? (
+            <ul style={{ maxHeight: 300, overflow: 'auto' }}>
+              {updated.map(c => <li key={c.class_id}>{c.class_name}</li>)}
+            </ul>
+          ) : (
+            <div className="small">No updated classes yet.</div>
+          )}
+        </div>
+      </div>
     </Modal>
   )
 }
+
 
 export default ClassTracking
