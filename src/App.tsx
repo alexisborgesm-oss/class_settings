@@ -7,6 +7,7 @@ import ModifyClass from '@/pages/ModifyClass'
 import ManageUsers from '@/pages/ManageUsers'
 import ManageProps from '@/pages/ManageProps'
 import MyClasses from '@/pages/MyClasses'
+import ClassTracking from '@/pages/ClassTracking'
 import AuthGate from '@/AuthGate'
 import { User } from '@/types'
 import './styles.css'
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="/users" element={<ManageUsers user={user} />} />
           <Route path="/props" element={<ManageProps user={user} />} />
           <Route path="/my-classes" element={<MyClasses user={user} />} />
+          <Route path="/tracking" element={<ClassTracking user={user} />} />
         </Routes>
       </div>
     </HashRouter>
