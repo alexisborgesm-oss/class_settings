@@ -1,201 +1,169 @@
-:root{
-  --green:#CDE8D6;
-  --obsidian:#3A3A3A;
-  --obsidian-2:#2E2E2E;
-  --graphite:#1C1C1C;
-  --graphite-2:#2B2B2B;
-  --soft-white:#F5F5F5;
-  --text:#1e1e1e;
-  --radius:16px;
-  --shadow:0 6px 20px rgba(0,0,0,.12);
-  --transition: all .3s ease-in-out;
-}
-*{ box-sizing:border-box }
-html,body,#root{ height:100% }
-body{
-  margin:0;
-  font-family:'Inter', ui-sans-serif, system-ui, -apple-system, 'Helvetica Neue', Arial;
-  background:var(--soft-white);
-  color:var(--text);
+
+/* Placeholder stylesheet - Reemplaza este archivo con tu hoja de estilos exacta */
+
+:root {
+  --bg: #0f1115;
+  --panel: #171a21;
+  --accent: #8bd3dd;
+  --muted: #9aa4b2;
+  --text: #e6edf3;
+  --danger: #ff6b6b;
+  --ok: #7bd88f;
 }
 
-/* App wrapper */
-.app{
-  min-height:100%;
-  display:flex;
-  flex-direction:column;
-}
-.dark body{ background:var(--graphite); color:var(--soft-white) }
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; background: var(--bg); color: var(--text); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
 
-/* Navbar */
-.navbar{
-  position:sticky; top:0; z-index:20;
-  display:flex; align-items:center; justify-content:space-between; gap:.5rem;
-  padding:.75rem 1rem;
-  background:var(--obsidian);
-  color:var(--soft-white);
-  box-shadow:var(--shadow);
-}
-.navbar .brand{ font-weight:600; letter-spacing:.5px }
-.navbar a, .navbar button, .navbar .user{
-  color:var(--soft-white); text-decoration:none;
-  margin-left:.75rem; padding:.45rem .75rem;
-  border-radius:10px; border:1px solid transparent;
-  transition:var(--transition);
-  white-space:nowrap;
-}
-.navbar a:hover, .navbar button:hover{
-  background:rgba(205,232,214,.15);
-  border-color:var(--green);
-  text-decoration:underline; text-underline-offset:3px;
-}
+.container { max-width: 100%; margin: 0 auto; padding: 16px; }
 
-/* Dropdown */
-.dropdown{ position:relative; display:inline-block }
-.dropdown-menu{
-  position:absolute; right:0; margin-top:.25rem;
-  background:var(--obsidian); color:var(--soft-white);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:12px; padding:.5rem; min-width:220px;
-  box-shadow:var(--shadow); display:none;
+.navbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; background: var(--panel); border-bottom: 1px solid #1f242e;
+  position: sticky; top: 0; z-index: 50;
 }
-.dropdown.open .dropdown-menu{ display:block }
-.dropdown-menu a{ display:block; padding:.5rem .6rem; border-radius:10px }
-.dropdown-menu a:hover{ background:rgba(205,232,214,.12) }
+.brand { font-weight: 700; letter-spacing: .3px; }
+.nav-links { display: flex; gap: 12px; align-items: center; }
+.nav-link { padding: 8px 10px; border-radius: 10px; cursor: pointer; text-decoration: none; color: var(--text); }
+.nav-link.active { background: #222836; }
+.user-pill { padding: 6px 10px; background: #222836; border-radius: 999px; font-size: 12px; color: var(--muted); }
 
-/* Layout */
-.container{ width:100%; max-width:1200px; margin:1rem auto; padding:0 1rem; overflow:visible }
-.card{
-  background:var(--soft-white); border-radius:var(--radius);
-  box-shadow:var(--shadow); padding:1rem; margin-bottom:1rem;
-  overflow-x:auto; /* tablas anchas -> scroll horizontal seguro */
+.dropdown { position: relative; }
+.dropdown-menu {
+  position: absolute; right: 0; top: calc(100% + 8px);
+  background: #12151c; border: 1px solid #242a36; border-radius: 12px;
+  padding: 6px; min-width: 220px; display: none;
 }
-.dark .card{ background:var(--obsidian) }
+.dropdown.open .dropdown-menu { display: block; }
+.dropdown-item { padding: 8px 10px; border-radius: 8px; cursor: pointer; color: var(--text); text-decoration: none; display: block; }
+.dropdown-item:hover { background: #1b2130; }
 
-/* Buttons */
-.btn{ padding:.6rem .9rem; border-radius:12px; border:1px solid transparent; cursor:pointer; transition:var(--transition) }
-.btn-primary{ background:var(--green); color:var(--obsidian) }
-.btn-primary:hover{ filter:brightness(0.95); transform:translateY(-1px) }
-.btn-secondary{ background:transparent; color:#111212; border-color:#819d8a }
-.btn-secondary:hover{ background:rgba(205,232,214,.1) }
-.btn-danger{ background:#e57373; color:#fff }
-.btn-danger:hover{ filter:brightness(.95) }
-
-/* Forms */
-.field{ display:flex; flex-direction:column; margin-bottom:.75rem; min-width:0 }
-.field label{ font-weight:600; margin-bottom:.35rem; line-height:1.2; white-space:normal }
-.input, .select{
-  padding:.6rem .7rem; border-radius:12px;
-  border:1px solid var(--green); background:#fff;
-  transition:var(--transition); min-width:0; width:100%; max-width:100%;
-}
-.input::placeholder{ color:#b8b8b8 }
-.input:focus, .select:focus{ outline:none; border-color:#98cfae; box-shadow:0 0 0 3px rgba(205,232,214,.35) }
-.dark .input, .dark .select{ background:var(--obsidian-2); color:var(--soft-white) }
-
-/* Evita que controles se pisen incluso en contenedores estrechos */
-.card :where(input,select,button){ min-height:40px; line-height:1.1 }
-
-/* Tables */
-table{ border-collapse:collapse; width:100%; max-width:100%; }
-th, td{
-  text-align:left; padding:.55rem .6rem;
-  border-bottom:1px solid rgba(0,0,0,.08);
-  vertical-align:middle;
-}
-th{ font-weight:600; user-select:none; cursor:pointer }
-tr:hover td{ background:rgba(205,232,214,.08) }
-
-/* Modal */
-.modal-backdrop{
-  position:fixed; inset:0; padding:1rem;
-  background:rgba(46,46,46,.55);
-  display:flex; align-items:center; justify-content:center;
-  animation:fade .2s ease;
-}
-.modal{
-  background:var(--soft-white); color:inherit; border-radius:18px;
-  padding:1rem; width:min(900px, 92vw); max-height:90vh; overflow:auto;
-  box-shadow:var(--shadow); position:relative; animation:slideUp .25s ease;
-}
-.dark .modal{ background:var(--obsidian) }
-.modal-close{ position:absolute; right:.6rem; top:.6rem; border:none; background:transparent; font-size:1.1rem; color:#bbb; cursor:pointer }
-@keyframes fade{ from{opacity:0} to{opacity:1} }
-@keyframes slideUp{ from{ transform:translateY(8px); opacity:.9 } to{ transform:translateY(0); opacity:1 } }
-
-/* ================== Responsive ================== */
-
-/* Tablet ↓ : permite cortar texto si hace falta */
-@media (max-width:1024px){
-  th, td{ white-space:normal }
+.panel {
+  background: var(--panel); border: 1px solid #1f242e; border-radius: 16px; padding: 16px; margin: 16px 0;
 }
 
-/* Móvil */
-/* === MOBILE — apilar controles NO-tabla y mantener tablas con scroll/alineadas === */
-@media (max-width: 768px){
+.input, select, textarea {
+  background: #0f1220; color: var(--text); border: 1px solid #263046; border-radius: 10px;
+  padding: 10px 12px; outline: none; width: 100%;
+}
+.input::placeholder { color: #6c7486; }
 
-  /* 1) Apilar el primer bloque de controles bajo el título (Create Records, etc.) */
-  .card h3 + *,
-  .card h4 + *{
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: .6rem !important;
+.btn {
+  padding: 10px 14px; border-radius: 12px; border: 1px solid #2a3348; background: #1a2030; color: var(--text); cursor: pointer;
+}
+.btn:hover { background: #22283a; }
+.btn.primary { background: #203052; border-color: #2b3b5e; }
+.btn.accent { background: #19323f; border-color: #335e6e; }
+.btn.danger { background: #3b1b1b; border-color: #5a2a2a; color: #ffdede; }
+
+.grid { display: grid; gap: 12px; }
+.grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td { padding: 10px; border-bottom: 1px solid #232a36; text-align: left; }
+.table th { color: var(--muted); font-weight: 600; }
+
+.badge { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #22283a; color: var(--muted); font-size: 12px; }
+
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,.5);
+  display: flex; align-items: center; justify-content: center; z-index: 100;
+}
+.modal-card { background: var(--panel); border: 1px solid #1f242e; border-radius: 16px; padding: 16px; width: min(680px, 92vw); }
+.carousel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.carousel-image-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+
+.carousel-image {
+  width: 100%;
+  height: auto;
+  max-height: 70vh; /* se adapta al alto de la pantalla */
+  object-fit: contain; /* mantiene proporción sin recortar */
+  border-radius: 8px;
+}
+
+.carousel-controls {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.small { font-size: 12px; color: var(--muted); }
+/* ====== RESPONSIVE ====== */
+
+/* Utilidades para controlar visibilidad por breakpoint */
+.only-desktop { display: initial; }
+.only-mobile { display: none; }
+
+/* Ajustes globales para evitar scroll horizontal */
+html, body {
+  overflow-x: hidden;
+}
+.container {
+  max-width: 100%;
+  width: 100%;
+  padding: 12px;
+}
+
+/* Tablas y paneles: evitar overflow horizontal en móvil */
+@media (max-width: 768px) {
+  .only-desktop { display: none; }
+  .only-mobile { display: initial; }
+
+  .navbar { padding: 10px 12px; }
+
+  /* Oculta los links del navbar (aparecerán dentro de "More") */
+  .nav-links { display: none; }
+
+  /* Reduce paddings y evita que algo empuje a la derecha */
+  .panel { padding: 12px; overflow-x: hidden; }
+
+  /* Las tablas no fuerzan ancho fijo en la última columna (acciones) */
+  .table { width: 100%; table-layout: auto; }
+  .table th:last-child,
+  .table td:last-child { width: auto !important; }
+
+  /* Celdas con botones: que envuelvan y no “empujen” el layout */
+  .table td > div { flex-wrap: wrap; gap: 6px; }
+}
+
+/* Un poco más de contención en pantallas muy pequeñas */
+@media (max-width: 420px) {
+  .btn { padding: 8px 10px; border-radius: 10px; }
+  .input, select, textarea { padding: 8px 10px; }
+  .user-pill { display: none; } /* opcional: quita el chip de usuario en móvil muy pequeño */
+}
+
+/* Carrusel responsive (por si no lo agregaste antes) */
+.carousel { display: flex; flex-direction: column; align-items: center; width: 100%; }
+.carousel-image-wrapper { width: 100%; max-width: 100%; overflow: hidden; display: flex; justify-content: center; }
+.carousel-image { width: 100%; height: auto; max-height: 70vh; object-fit: contain; border-radius: 8px; }
+.carousel-controls { margin-top: 8px; display: flex; align-items: center; gap: 12px; }
+/* Asegurar que el usuario sea visible también en móvil */
+.user-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+
+  font-size: 0.9rem;
+  border: none;
+}
+
+@media (max-width: 768px) {
+  .user-pill {
+    display: inline-flex; /* forzar visible en mobile */
   }
-  /* Que nada dentro de ese bloque intente forzar anchuras raras */
-  .card h3 + * > *,
-  .card h4 + * > *{
-    min-width: 0;
-    width: 100%;
-  }
-  /* Etiquetas y campos en bloque para evitar solapes de texto */
-  .field{ display:grid; grid-template-columns: 1fr; }
-  .field label{ white-space: normal; line-height: 1.2; }
-
-  /* 2) Tablas: scroll horizontal + columnas alineadas y separadores verticales
-     Ajustes clave:
-     - Mantener table-layout: fixed en la tabla para que thead y tbody compartan el mismo cálculo de anchos
-     - NO forzar display:table en thead/tbody/tr (dejarlos en sus roles nativos)
-     - Aplicar box-sizing y anchos consistentes en th/td; usar white-space: nowrap para mantener columnas
-     - Añadir una regla de min-width para que el contenedor scrolleable funcione en móviles estrechos
-  */
-  .card{
-    overflow-x: auto;                 /* arrastrar a la derecha */
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Tabla principal dentro de .card: fijar layout y ancho mínimo */
-  .card > table{
-    width: 100%;
-    min-width: 720px;                 /* ajusta si necesitas más/menos columnas */
-    table-layout: fixed;              /* mismas anchuras para thead/tbody */
-    border-spacing: 0;
-    border-collapse: collapse;        /* mantener colapsado para evitar offsets */
-    box-sizing: border-box;
-  }
-
-  /* Mantener roles semánticos de thead/tbody/tr para evitar desalineos */
-  .card > table thead { display: table-header-group; }
-  .card > table tbody { display: table-row-group; }
-  .card > table tr { display: table-row; }
-
-  /* Asegurar que th y td se comporten idénticamente y con el mismo box-sizing */
-  .card > table th,
-  .card > table td{
-    display: table-cell;
-    box-sizing: border-box;
-    padding: .55rem .6rem;
-    white-space: nowrap;
-    vertical-align: middle;
-   // border-right: 1px solid rgba(0,0,0,.12); /* separadores de columna */
-    text-align: left;                      /* mantener alineación original por defecto */
-  }
-
-  /* Quitar separador derecho en la última columna */
-  .card > table th:last-child,
-  .card > table td:last-child{
-    border-right: none;
-  }
-
-  /* Si quieres centrar contenido específico en móvil, usa esta clase en HTML y ajusta aquí:
-     .table-center th, .table-center td { text-align:center; } */
 }
